@@ -11,7 +11,8 @@
 .Rhistory
 annotations/HPA-nclusters
 annotations/TabulaSapiens-nclusters
-annotations/cluster-annotation/
+annotations/cluster-annotation/HPA/
+annotations/cluster-annotation/TabulaSapiens/
 annotations/HPO/HPA-genes-ENSEMBL
 annotations/HPO/HPA-gene-symbols
 annotations/HPO/hpo-id-to-name
