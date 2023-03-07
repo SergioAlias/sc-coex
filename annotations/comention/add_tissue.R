@@ -44,4 +44,4 @@ HPA.coment.dt <- data.table(tissue = names(HPA.comentions),
 HPA.coment.dt <- HPA.coment.dt[order(-n.comentions),]
 
 
-fwrite("")
+fwrite(HPA.coment.dt, file = "comentions-per-tissue-HPA.tsv", sep = "\t")
