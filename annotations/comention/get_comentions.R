@@ -1,9 +1,9 @@
 #!/usr/bin/env Rscript
 
 # Sergio Alías, 20230310
-# Last modified 20230310
+# Last modified 20230315
 
-# Script for getting commentions that explain 
+# Script for getting commentions that explain coex results
 # We need:
 #   - Coex analysis results -> wil_results-[HPA/TabulaSapiens]-[tissue].tsv
 #   - Comention files -> ALL_CL-HPO_add_s.tsv /// ALL_ACT-HPO_add_s.tsv
@@ -67,3 +67,6 @@ for (i in 1:nrow(results)){
     }
   }
 }
+
+
+fwrite(sign.results, file = paste0(file.path("..", "..", "results_w_comention", paste0(tissue, "_", dataset, "_results_w_comention.tsv"))), sep = "\t")
