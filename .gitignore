@@ -24,6 +24,7 @@ annotations/UBERON/TabulaSapiens-tissues-uberon
 annotations/UBERON/results/
 coex-analysis/HPA/
 coex-analysis/TabulaSapiens/
+datasets/
 HPA/results/*/
 TabulaSapiens/*/
 test-TiPA/*/

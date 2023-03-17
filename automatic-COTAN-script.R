@@ -83,12 +83,13 @@ for (i in 0:n_clus){
   
   # Dataset
   
-  # HPAraw <- read.table(paste('../datasets/', tissue_name, '/', dataset_name, "-", tissue, '-dataset.tsv', sep = ''), header = TRUE, sep = "\t") # PARA HPA
-  HPAraw <- read.table(paste('../datasets/', tissue_name, '/', dataset_name, "-", tissue, '-dataset.tsv', sep = ''), row.names = 1, header = TRUE, sep = "\t") # PARA TABULA SAPIENS
-  # HPAraw <- as.data.frame(t(as.matrix(HPAraw))) # PARA HPA
+  HPAraw <- read.table(paste('../datasets/', tissue_name, '/', tissue, '-dataset.tsv', sep = ''), header = TRUE, sep = "\t") # PARA HPA
+  # HPAraw <- read.table(paste('../datasets/', tissue_name, '/', dataset_name, "-", tissue, '-dataset.tsv', sep = ''), row.names = 1, header = TRUE, sep = "\t") # PARA TABULA SAPIENS
+  HPAraw <- as.data.frame(t(as.matrix(HPAraw))) # PARA HPA
   
   ### CAMBIAR SI SE USA HPA O TABULASAPIENS ###
-  # HPAraw <- HPAraw[4:nrow(HPAraw), ] # Para HPA
+  HPAraw <- HPAraw[4:nrow(HPAraw), ] # Para HPA
+  HPAraw[] <- lapply(HPAraw, as.numeric) # Para HPA
   # HPAraw <- HPAraw[1:10000, ] # para reducir el dataset
   
   #data("ERCCraw", package = "COTAN")
@@ -99,12 +100,8 @@ for (i in 0:n_clus){
   
   
   # Outdir
-  
-  # out_path <- '/home/salias/COTAN/results/' # para HPA
-  # out_path <- './'
-  
+    
   out_dir <- paste0(tissue_name, '/', tissue)
-  
   
   # Initializing COTAN object with the row count table and the metadata for the experiment.
   obj <- new("scCOTAN",raw = HPAraw)

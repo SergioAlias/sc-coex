@@ -16,7 +16,7 @@ library(data.table)
 
 ### Input files setup
 
-tissue <- "blood"
+tissue <- "stomach"
 dataset <- "HPA"
 
 results <- fread(file.path("../../coex-analysis/",
