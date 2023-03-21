@@ -11,6 +11,7 @@
 *.h5ad
 .Rhistory
 scp-commands.sh
+coex-analysis/
 annotations/HPA-nclusters
 annotations/TabulaSapiens-nclusters
 annotations/cluster-annotation/HPA/
