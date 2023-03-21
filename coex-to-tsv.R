@@ -1,5 +1,5 @@
 # Sergio Alías, 20220622
-# Last modified 20221007
+# Last modified 20230321
 
 library(optparse)
 
@@ -31,8 +31,8 @@ for(i in 0:max_cluster) {
       coex <- readRDS(paste0(tissue, '/', tissue, '-', cluster, '/', dataset, '.', tissue, '-', cluster, '.matrix.cotan.RDS'))
       write.table(colnames(coex), paste0(tissue, '/genes-', tissue, '-', cluster, '.tsv'), sep = '\t')
   }, warning = function(w) {
-      message(paste0(tissue, '-', cluster, ' does not seems to exist. Please make sure this makes sense'))
+      message(paste0(tissue, '-', cluster, ' does not seem to exist. Please make sure this makes sense'))
   }, error = function(e) {
-      message(paste0(tissue, '-', cluster, ' does not seems to exist. Please make sure this makes sense'))
+      message(paste0(tissue, '-', cluster, ' does not seem to exist. Please make sure this makes sense'))
   })
 }
