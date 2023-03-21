@@ -1,11 +1,11 @@
 # Sergio Alías, 20220614
-# Last modified 20221102
+# Last modified 20230321
 
 # plot_coex.R
 
 # Wilcoxon test, p-values and plots of HPO-related genes in a tissue
 
-# Call it from the bash for multiple HPO/tissue analysis
+# Call it from the bash for multiple HPO/tissue analysis (or use workflow_coex.sh directly)
 
 
 suppressMessages(library(ggplot2))
@@ -84,7 +84,11 @@ get_pval_wil <- function(hpo, cluster){
   
   # Carga y subsetting de la matrix de COEX
   setwd(old_wdir)
-  coex <- readRDS(paste0(dataset, '/results/', tissue, '/', tissue, '-', cluster, '/', dataset, '.', tissue, '-', cluster, '.matrix.cotan.RDS'))
+  if(dataset != "HPA"){
+    coex <- readRDS(paste0(dataset, '/results/', tissue, '/', tissue, '-', cluster, '/', dataset, '.', tissue, '-', cluster, '.matrix.cotan.RDS'))
+  }else{
+    coex <- readRDS(paste0(dataset, '/results/', tissue, '/', dataset, '.', tissue, '-', cluster, '.matrix.cotan.RDS'))
+  }
   setwd(wdir)
   sub_coex <- coex[genes, genes]  
 
