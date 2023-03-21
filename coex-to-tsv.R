@@ -28,7 +28,11 @@ for(i in 0:max_cluster) {
   tryCatch({
       cluster <- i
       message(paste0('Generating TSV from ', tissue, '-', cluster, ' COEX matrix...\n'))
-      coex <- readRDS(paste0(tissue, '/', tissue, '-', cluster, '/', dataset, '.', tissue, '-', cluster, '.matrix.cotan.RDS'))
+      if(opt$dataset != "HPA"){
+        coex <- readRDS(paste0(tissue, '/', tissue, '-', cluster, '/', dataset, '.', tissue, '-', cluster, '.matrix.cotan.RDS'))
+      }else{
+        coex <- readRDS(paste0(tissue, '/', dataset, '.', tissue, '-', cluster, '.matrix.cotan.RDS'))
+      }
       write.table(colnames(coex), paste0(tissue, '/genes-', tissue, '-', cluster, '.tsv'), sep = '\t')
   }, warning = function(w) {
       message(paste0(tissue, '-', cluster, ' does not seem to exist. Please make sure this makes sense'))
