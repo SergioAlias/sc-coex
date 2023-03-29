@@ -1,4 +1,6 @@
 .~lock.*
+*.log
+*.RDS
 *.csv
 *.json
 *.pdf
