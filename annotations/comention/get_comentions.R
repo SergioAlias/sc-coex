@@ -1,7 +1,7 @@
 #!/usr/bin/env Rscript
 
 # Sergio Alías, 20230310
-# Last modified 20230315
+# Last modified 20230411
 
 # Script for getting commentions that explain coex results
 # We need:
@@ -16,7 +16,7 @@ library(data.table)
 
 ### Input files setup
 
-tissue <- "stomach"
+tissue <- "spleen"
 dataset <- "HPA"
 
 results <- fread(file.path("../../coex-analysis/",
@@ -44,7 +44,7 @@ colnames(comentions) <- c("ACT.id",
                           "mentions.HPO",
                           "comentions",
                           "ratio",
-                          "p.val")
+                          "coment.pval")
 
 ### Filtering comention file by HPO terms
 
@@ -59,11 +59,21 @@ sign.results <- data.table()
 
 for (i in 1:nrow(results)){
   for (j in 1:nrow(HPO.comentions)){
+    has.comention <- FALSE
     if (gsub("HP", "HP:", results[i, hpo]) == HPO.comentions[j, HPO.id]){
       if (results[i, annotation] == HPO.comentions[j, ACT.name]){
-        row.to.add <- cbind(results[i], HPO.comentions[j, list(str.sim, comentions, ratio, p.val)])
+        row.to.add <- cbind(results[i], HPO.comentions[j, list(str.sim, comentions, ratio, coment.pval)])
         sign.results <- rbind(sign.results, row.to.add)
+        has.comention <- TRUE
+
       }
+    }
+    if (!has.comention){
+      row.to.add <- cbind(results[i], data.table(str.sim = 1,
+                                                 comentions = 1,
+                                                 ratio = 1,
+                                                 coment.pval = 1))
+      sign.results <- rbind(sign.results, row.to.add)
     }
   }
 }
