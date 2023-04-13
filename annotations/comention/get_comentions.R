@@ -16,7 +16,7 @@ library(data.table)
 
 ### Input files setup
 
-tissue <- "liver"
+tissue <- "testis"
 dataset <- "HPA"
 
 results <- fread(file.path("../../coex-analysis/",
@@ -97,6 +97,41 @@ for (i in 1:nrow(results)){
 }
 
 
+###########    PARA QUEDARSE SOLO CON EL MÍNIMO DE CADA PAR HPO-CELLTYPE ########
+
+#truth_tables <- data.frame(TP = numeric(), TN = numeric(), FP = numeric(), FN = numeric())
+
+only.lowest.results <- sign.results[, .SD[which.min(wilcoxon.pval)], by = .(hpo, annotation)]
+
+pval_thr <- 0.001
+
+# Calculate TP, TN, FP, FN
+TP <- only.lowest.results[wilcoxon.pval <= pval_thr & coment.pval <= pval_thr, .N]
+TN <- only.lowest.results[wilcoxon.pval > pval_thr & coment.pval > pval_thr, .N]
+FP <- only.lowest.results[wilcoxon.pval <= pval_thr & coment.pval > pval_thr, .N]
+FN <- only.lowest.results[wilcoxon.pval > pval_thr & coment.pval <= pval_thr, .N]
+
+# Print the counts
+cat("TP:", TP, "\n")
+cat("TN:", TN, "\n")
+cat("FP:", FP, "\n")
+cat("FN:", FN, "\n")
+
+
+to.add <- data.frame(TP = TP, TN = TN, FP = FP, FN = FN)
+truth_tables <- rbind(truth_tables, to.add)
+rownames(truth_tables)[nrow(truth_tables)] <- tissue
+
+
+write.table(truth_tables, file = "../../results_w_comention/truth_table_filtered.tsv", sep = "\t", quote = FALSE, col.names = NA)
+
+
+#################################################################################
+
+
+
+
+
 min_nonzero_coment_pval <- min(sign.results[coment.pval != 0][["coment.pval"]])
 
 sign.results[, `:=`(log10.wilcoxon.pval = -log10(wilcoxon.pval + (min_nonzero_coment_pval/10)),
@@ -145,3 +180,48 @@ for (i in seq_along(result_list)){
   
   
 }
+
+### Truth table creation
+
+#truth_tables <- data.frame(TP = numeric(), TN = numeric(), FP = numeric(), FN = numeric())
+
+
+#### TP, TN, FP, FN
+
+pval_thr <- 0.001
+
+# Calculate TP, TN, FP, FN
+TP <- sign.results[wilcoxon.pval <= pval_thr & coment.pval <= pval_thr, .N]
+TN <- sign.results[wilcoxon.pval > pval_thr & coment.pval > pval_thr, .N]
+FP <- sign.results[wilcoxon.pval <= pval_thr & coment.pval > pval_thr, .N]
+FN <- sign.results[wilcoxon.pval > pval_thr & coment.pval <= pval_thr, .N]
+
+# Print the counts
+cat("TP:", TP, "\n")
+cat("TN:", TN, "\n")
+cat("FP:", FP, "\n")
+cat("FN:", FN, "\n")
+
+
+to.add <- data.frame(TP = TP, TN = TN, FP = FP, FN = FN)
+truth_tables <- rbind(truth_tables, to.add)
+rownames(truth_tables)[nrow(truth_tables)] <- tissue
+
+
+write.table(truth_tables, file = "../../results_w_comention/truth_table.tsv", sep = "\t", quote = FALSE, col.names = NA)
+
+
+# res_table <- data.frame(
+#   Negative = c(TN, FN, TN + FN),
+#   Positive = c(TP, FP, TP + FP),
+#   Total = c(TN + TP, FN + FP, TN + FN + TP + FP)
+# )
+# 
+# # Set row names
+# rownames(res_table) <- c("True", "False", "Total")
+# 
+# 
+# # Export as TSV file
+# write.table(result, file = "output.tsv", sep = "\t", quote = FALSE)
+
+
