@@ -1,7 +1,7 @@
 #!/usr/bin/env Rscript
 
 # Sergio Alías, 20230310
-# Last modified 20230413
+# Last modified 20230414
 
 # Script for getting commentions that explain coex results
 # We need:
@@ -16,9 +16,13 @@ library(data.table)
 
 ### Input files setup
 
-tissue <- "testis"
+tissues <- c("blood", "liver", "lung", "pancreas", "spleen", "stomach", "testis")
 dataset <- "HPA"
 
+for (i in seq_along(tissues)){
+
+tissue <- tissues[i]
+  
 results <- fread(file.path("../../coex-analysis/",
                            dataset,
                            tissue,
@@ -36,7 +40,8 @@ annotations <- fread(file.path("../cluster-annotation",
                                       "-cluster-annotation")),
                      header = FALSE)
 
-# results <- results[wicoxon.sign != "ns"] # For keeping only significant wilcoxon p-values 
+#results <- results[wicoxon.sign != "ns"] # For keeping only significant wilcoxon p-values 
+#results <- results[wilcoxon.pval <= 10**-3] # For keeping only significant wilcoxon p-values 
 
 comentions <- fread("ALL_ACT-HPO_add_s.tsv")
 
@@ -96,6 +101,16 @@ for (i in 1:nrow(results)){
   }
 }
 
+
+fwrite(sign.results, file = paste0(file.path("..",
+                                             "..",
+                                             "results_w_comention",
+                                             paste0(tissue,
+                                                    "_",
+                                                    dataset,
+                                                    "_results_w_comention_ALL.tsv"))),
+       sep = "\t")
+}
 
 ###########    PARA QUEDARSE SOLO CON EL MÍNIMO DE CADA PAR HPO-CELLTYPE ########
 
