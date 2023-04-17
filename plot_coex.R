@@ -276,7 +276,7 @@ message(paste0("p-val and wilcoxon results saved in ", outfile))
 
 #### Saving plots
 
-pdf(paste0(hpo, '/wil_plots_', dataset, '_', tissue, '_', hpo, '.pdf'))
+pdf(paste0(hpo, '/wil_plots_extreme_', dataset, '_', tissue, '_', hpo, '.pdf'))
 
 for (j in 1:length(hpo_plots)){
   print(hpo_plots[[j]])
