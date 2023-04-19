@@ -1,5 +1,5 @@
 # Sergio Alías, 20220614
-# Last modified 20230417
+# Last modified 20230419
 
 # plot_coex.R
 
@@ -159,7 +159,7 @@ get_pval_wil <- function(hpo, cluster){
   
   for (i in 2:length(df_list)) {
     rnd_1000_distr <- c(rnd_1000_distr, df_list[[i]]$COEX %>% abs())
-    rnd_1000_distr_no_abs <- c(rnd_1000_distr, df_list[[i]]$COEX)
+    rnd_1000_distr_no_abs <- c(rnd_1000_distr_no_abs, df_list[[i]]$COEX)
   }
   message(paste0('Performing three wilcox_tests (', hpo, ' ', tissue, '-', cluster, ')... ', i-1, ' random samples\n'))
   
