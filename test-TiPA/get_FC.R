@@ -42,3 +42,6 @@ RNAseq[, log2FC_single_tissue := log2(pTPM / (sum_pTPM_single_tissue / n_cluster
 # Remove the temporary columns
 RNAseq[, c("sum_pTPM", "n_clusters", "sum_pTPM_per_ct", "n_clusters_per_ct", "sum_pTPM_single_tissue", "n_clusters_single_tissue") := NULL]
 
+fwrite(RNAseq,
+       file = "computed_FC.tsv",
+       sep = "\t")
