@@ -1,7 +1,7 @@
 #!/usr/bin/env Rscript
 
 # Sergio Alías, 20230310
-# Last modified 20230414
+# Last modified 20230420
 
 # Script for getting commentions that explain coex results
 # We need:
@@ -18,12 +18,15 @@ library(data.table)
 
 tissues <- c("blood", "liver", "lung", "pancreas", "spleen", "stomach", "testis")
 dataset <- "HPA"
+urales_home <- "/run/user/1013/gvfs/sftp:host=urales,user=salias/home/salias"
+
 
 for (i in seq_along(tissues)){
 
 tissue <- tissues[i]
   
-results <- fread(file.path("../../coex-analysis/",
+results <- fread(file.path(urales_home,
+                           "TFM/coex-analysis",
                            dataset,
                            tissue,
                            paste0("wil_results_",
@@ -34,7 +37,8 @@ results <- fread(file.path("../../coex-analysis/",
                            )
                  )
 
-annotations <- fread(file.path("../cluster-annotation",
+annotations <- fread(file.path(urales_home,
+                               "/TFM/annotations/cluster-annotation",
                                dataset,
                                paste0(tissue,
                                       "-cluster-annotation")),
@@ -43,7 +47,8 @@ annotations <- fread(file.path("../cluster-annotation",
 #results <- results[wicoxon.sign != "ns"] # For keeping only significant wilcoxon p-values 
 #results <- results[wilcoxon.pval <= 10**-3] # For keeping only significant wilcoxon p-values 
 
-comentions <- fread("ALL_ACT-HPO_add_s.tsv")
+comentions <- fread(file.path(urales_home,
+                              "TFM/annotations/comention/ALL_ACT-HPO_add_s.tsv"))
 
 colnames(comentions) <- c("ACT.id",
                           "ACT.name",
@@ -102,9 +107,9 @@ for (i in 1:nrow(results)){
 }
 
 
-fwrite(sign.results, file = paste0(file.path("..",
-                                             "..",
-                                             "results_w_comention",
+fwrite(sign.results, file = paste0(file.path(urales_home,
+                                             "TFM/results_w_comention",
+                                             tissue,
                                              paste0(tissue,
                                                     "_",
                                                     dataset,
@@ -114,7 +119,7 @@ fwrite(sign.results, file = paste0(file.path("..",
 
 ###########    PARA QUEDARSE SOLO CON EL MÍNIMO DE CADA PAR HPO-CELLTYPE ########
 
-#truth_tables <- data.frame(TP = numeric(), TN = numeric(), FP = numeric(), FN = numeric())
+truth_tables <- data.frame(TP = numeric(), TN = numeric(), FP = numeric(), FN = numeric()) # solo la primera vez
 
 only.lowest.results <- sign.results[, .SD[which.min(wilcoxon.pval)], by = .(hpo, annotation)]
 
@@ -138,63 +143,68 @@ truth_tables <- rbind(truth_tables, to.add)
 rownames(truth_tables)[nrow(truth_tables)] <- tissue
 
 
-write.table(truth_tables, file = "../../results_w_comention/truth_table_filtered.tsv", sep = "\t", quote = FALSE, col.names = NA)
+write.table(truth_tables,
+            file = file.path(urales_home,
+                             "TFM/results_w_comention/confusion_table_filtered.tsv"),
+            sep = "\t",
+            quote = FALSE,
+            col.names = NA)
 
 
 #################################################################################
 
 
 
+### PARA LOS LOG10
 
-
-min_nonzero_coment_pval <- min(sign.results[coment.pval != 0][["coment.pval"]])
-
-sign.results[, `:=`(log10.wilcoxon.pval = -log10(wilcoxon.pval + (min_nonzero_coment_pval/10)),
-                    log10.coment.pval = -log10(coment.pval + (min_nonzero_coment_pval/10)))]
-
-fwrite(sign.results, file = paste0(file.path("..",
-                                             "..",
-                                             "results_w_comention",
-                                             tissue,
-                                             paste0(tissue,
-                                                    "_",
-                                                    dataset,
-                                                    "_results_w_comention.tsv"))),
-       sep = "\t")
+# min_nonzero_coment_pval <- min(sign.results[coment.pval != 0][["coment.pval"]])
+# 
+# sign.results[, `:=`(log10.wilcoxon.pval = -log10(wilcoxon.pval + (min_nonzero_coment_pval/10)),
+#                     log10.coment.pval = -log10(coment.pval + (min_nonzero_coment_pval/10)))]
+# 
+# fwrite(sign.results, file = paste0(file.path("..",
+#                                              "..",
+#                                              "results_w_comention",
+#                                              tissue,
+#                                              paste0(tissue,
+#                                                     "_",
+#                                                     dataset,
+#                                                     "_results_w_comention.tsv"))),
+#        sep = "\t")
 
 
 
 ### For loop considering we want results per cell type
-for (i in seq_along(result_list)){
-  
-  clusters_to_keep <- result_list[[i]]
-  celltype_name <- names(result_list)[i]
-  
-  # filter the data.table to keep only the rows with matching numbers
-  results_filtered <- sign.results[sapply(strsplit(tissue, "-"), function(x) {
-    num <- as.numeric(x[2])
-    num %in% clusters_to_keep
-  })]
-  
-  min_nonzero_coment_pval <- min(results_filtered[coment.pval != 0][["coment.pval"]])
-  
-  results_filtered[, `:=`(log10.wilcoxon.pval = -log10(wilcoxon.pval + (min_nonzero_coment_pval/10)),
-                      log10.coment.pval = -log10(coment.pval + (min_nonzero_coment_pval/10)))]
-  
-  fwrite(results_filtered, file = paste0(file.path("..",
-                                                   "..",
-                                                   "results_w_comention",
-                                                   tissue,
-                                                   paste0(tissue,
-                                                          "_",
-                                                          gsub(" ", "-", celltype_name),
-                                                          "_",
-                                                          dataset,
-                                                          "_results_w_comention.tsv"))),
-         sep = "\t")
-  
-  
-}
+# for (i in seq_along(result_list)){
+#   
+#   clusters_to_keep <- result_list[[i]]
+#   celltype_name <- names(result_list)[i]
+#   
+#   # filter the data.table to keep only the rows with matching numbers
+#   results_filtered <- sign.results[sapply(strsplit(tissue, "-"), function(x) {
+#     num <- as.numeric(x[2])
+#     num %in% clusters_to_keep
+#   })]
+#   
+#   min_nonzero_coment_pval <- min(results_filtered[coment.pval != 0][["coment.pval"]])
+#   
+#   results_filtered[, `:=`(log10.wilcoxon.pval = -log10(wilcoxon.pval + (min_nonzero_coment_pval/10)),
+#                       log10.coment.pval = -log10(coment.pval + (min_nonzero_coment_pval/10)))]
+#   
+#   fwrite(results_filtered, file = paste0(file.path("..",
+#                                                    "..",
+#                                                    "results_w_comention",
+#                                                    tissue,
+#                                                    paste0(tissue,
+#                                                           "_",
+#                                                           gsub(" ", "-", celltype_name),
+#                                                           "_",
+#                                                           dataset,
+#                                                           "_results_w_comention.tsv"))),
+#          sep = "\t")
+#   
+#   
+# }
 
 ### Truth table creation
 
@@ -223,7 +233,12 @@ truth_tables <- rbind(truth_tables, to.add)
 rownames(truth_tables)[nrow(truth_tables)] <- tissue
 
 
-write.table(truth_tables, file = "../../results_w_comention/truth_table.tsv", sep = "\t", quote = FALSE, col.names = NA)
+write.table(truth_tables,
+            file = file.path(urales_home,
+                             "TFM/results_w_comention/confusion_table.tsv"),
+            sep = "\t",
+            quote = FALSE,
+            col.names = NA)
 
 
 # res_table <- data.frame(
