@@ -19,6 +19,7 @@ library(data.table)
 tissues <- c("blood", "liver", "lung", "pancreas", "spleen", "stomach", "testis")
 dataset <- "HPA"
 urales_home <- "/run/user/1013/gvfs/sftp:host=urales,user=salias/home/salias"
+urales_home <- "/run/user/1000/gvfs/sftp:host=urales/home/salias"
 
 
 for (i in seq_along(tissues)){
@@ -115,11 +116,11 @@ fwrite(sign.results, file = paste0(file.path(urales_home,
                                                     dataset,
                                                     "_results_w_comention_ALL.tsv"))),
        sep = "\t")
-}
+#}
 
 ###########    PARA QUEDARSE SOLO CON EL MÍNIMO DE CADA PAR HPO-CELLTYPE ########
 
-truth_tables <- data.frame(TP = numeric(), TN = numeric(), FP = numeric(), FN = numeric()) # solo la primera vez
+truth_tables_filt <- data.frame(TP = numeric(), TN = numeric(), FP = numeric(), FN = numeric()) # solo la primera vez
 
 only.lowest.results <- sign.results[, .SD[which.min(wilcoxon.pval)], by = .(hpo, annotation)]
 
@@ -139,16 +140,11 @@ cat("FN:", FN, "\n")
 
 
 to.add <- data.frame(TP = TP, TN = TN, FP = FP, FN = FN)
-truth_tables <- rbind(truth_tables, to.add)
-rownames(truth_tables)[nrow(truth_tables)] <- tissue
+truth_tables_filt <- rbind(truth_tables_filt, to.add)
+rownames(truth_tables_filt)[nrow(truth_tables_filt)] <- tissue
 
 
-write.table(truth_tables,
-            file = file.path(urales_home,
-                             "TFM/results_w_comention/confusion_table_filtered.tsv"),
-            sep = "\t",
-            quote = FALSE,
-            col.names = NA)
+
 
 
 #################################################################################
@@ -233,12 +229,7 @@ truth_tables <- rbind(truth_tables, to.add)
 rownames(truth_tables)[nrow(truth_tables)] <- tissue
 
 
-write.table(truth_tables,
-            file = file.path(urales_home,
-                             "TFM/results_w_comention/confusion_table.tsv"),
-            sep = "\t",
-            quote = FALSE,
-            col.names = NA)
+}
 
 
 # res_table <- data.frame(
@@ -254,4 +245,16 @@ write.table(truth_tables,
 # # Export as TSV file
 # write.table(result, file = "output.tsv", sep = "\t", quote = FALSE)
 
+write.table(truth_tables_filt,
+            file = file.path(urales_home,
+                             "TFM/results_w_comention/confusion_table_filtered.tsv"),
+            sep = "\t",
+            quote = FALSE,
+            col.names = NA)
 
+write.table(truth_tables,
+            file = file.path(urales_home,
+                             "TFM/results_w_comention/confusion_table.tsv"),
+            sep = "\t",
+            quote = FALSE,
+            col.names = NA)
