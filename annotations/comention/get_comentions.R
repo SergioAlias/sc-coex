@@ -1,9 +1,9 @@
 #!/usr/bin/env Rscript
 
 # Sergio Alías, 20230310
-# Last modified 20230420
+# Last modified 20230424
 
-# Script for getting commentions that explain coex results
+# Script for getting commentions that explain coex / fc / fcst results
 # We need:
 #   - Coex analysis results -> wil_results-[HPA/TabulaSapiens]-[tissue].tsv
 #   - Comention files -> ALL_CL-HPO_add_s.tsv /// ALL_ACT-HPO_add_s.tsv
@@ -17,25 +17,61 @@ library(data.table)
 ### Input files setup
 
 tissues <- c("blood", "liver", "lung", "pancreas", "spleen", "stomach", "testis")
+tissues <- c("adipose-tissue",
+             "blood",
+             "brain",
+             "breast",
+             "bronchus",
+             "colon",
+             "endometrium",
+             "esophagus",
+             "eye",
+             "heart",
+             "kidney",
+             "liver",
+             "lung",
+             "lymph-node",
+             "ovary",
+             "pancreas",
+             #"placenta",
+             "prostate-gland",
+             #"rectum",
+             "skeletal-muscle-organ",
+             "skin-of-body",
+             "small-intestine",
+             "spleen",
+             "stomach",
+             "testis")
 dataset <- "HPA"
 urales_home <- "/run/user/1013/gvfs/sftp:host=urales,user=salias/home/salias"
 urales_home <- "/run/user/1000/gvfs/sftp:host=urales/home/salias"
 
 
+truth_tables_filt <- data.frame(TP = numeric(), TN = numeric(), FP = numeric(), FN = numeric()) # solo la primera vez
+truth_tables <- data.frame(TP = numeric(), TN = numeric(), FP = numeric(), FN = numeric())
+
+
 for (i in seq_along(tissues)){
 
 tissue <- tissues[i]
-  
+
+if (!file.exists(file.path(urales_home,
+                           "TFM/results_w_comention",
+                           tissue))) {
+  dir.create(file.path(urales_home,
+                       "TFM/results_w_comention",
+                       tissue))
+}
+
+
+#-----# Comentar si ya se tiene el result_w_comention
+
 results <- fread(file.path(urales_home,
-                           "TFM/coex-analysis",
-                           dataset,
+                           "TFM/fold_change/fcst",
                            tissue,
-                           paste0("wil_results_",
-                                  dataset,
-                                  "_",
+                           paste0("wil_results_fcst_",
                                   tissue,
-                                  ".tsv")
-                           )
+                                  "_corrected.tsv"))
                  )
 
 annotations <- fread(file.path(urales_home,
@@ -45,8 +81,15 @@ annotations <- fread(file.path(urales_home,
                                       "-cluster-annotation")),
                      header = FALSE)
 
+#-----#
+
+
 #results <- results[wicoxon.sign != "ns"] # For keeping only significant wilcoxon p-values 
 #results <- results[wilcoxon.pval <= 10**-3] # For keeping only significant wilcoxon p-values 
+
+
+
+#-----# Comentar si ya se tiene el result_w_comention
 
 comentions <- fread(file.path(urales_home,
                               "TFM/annotations/comention/ALL_ACT-HPO_add_s.tsv"))
@@ -77,7 +120,8 @@ for (string in strings) {
 
 ### Filtering comention file by HPO terms
 
-HPO.comentions <- comentions[HPO.id %in% unique(gsub("HP", "HP:", results$hpo))]
+# HPO.comentions <- comentions[HPO.id %in% unique(gsub("HP", "HP:", results$hpo))] # coex
+HPO.comentions <- comentions[HPO.id %in% unique(results$hpo)] # fc, fcst
 
 rm(comentions)
 
@@ -114,13 +158,33 @@ fwrite(sign.results, file = paste0(file.path(urales_home,
                                              paste0(tissue,
                                                     "_",
                                                     dataset,
-                                                    "_results_w_comention_ALL.tsv"))),
+                                                    "_fcst_results_w_comention.tsv"))),
        sep = "\t")
+
+
+#-----#
+
+
+
 #}
+
+# Para cambiar extreme por high y low (Descomentar si ya se tiene el result_w_comention)
+
+sign.results <- fread(file.path(urales_home,
+                          "TFM/results_w_comention",
+                          tissue,
+                          paste0(tissue,
+                                 "_",
+                                 dataset,
+                                 "_fc_results_w_comention.tsv")))
+
+sign.results[, "wilcoxon.pval" := NULL]
+setnames(sign.results, "high_wil_pval", "wilcoxon.pval")
+
 
 ###########    PARA QUEDARSE SOLO CON EL MÍNIMO DE CADA PAR HPO-CELLTYPE ########
 
-truth_tables_filt <- data.frame(TP = numeric(), TN = numeric(), FP = numeric(), FN = numeric()) # solo la primera vez
+
 
 only.lowest.results <- sign.results[, .SD[which.min(wilcoxon.pval)], by = .(hpo, annotation)]
 
@@ -202,9 +266,7 @@ rownames(truth_tables_filt)[nrow(truth_tables_filt)] <- tissue
 #   
 # }
 
-### Truth table creation
-
-#truth_tables <- data.frame(TP = numeric(), TN = numeric(), FP = numeric(), FN = numeric())
+### Confusion table creation
 
 
 #### TP, TN, FP, FN
@@ -247,14 +309,14 @@ rownames(truth_tables)[nrow(truth_tables)] <- tissue
 
 write.table(truth_tables_filt,
             file = file.path(urales_home,
-                             "TFM/results_w_comention/confusion_table_filtered.tsv"),
+                             "TFM/results_w_comention/fc_high_confusion_table_filtered.tsv"),
             sep = "\t",
             quote = FALSE,
             col.names = NA)
 
 write.table(truth_tables,
             file = file.path(urales_home,
-                             "TFM/results_w_comention/confusion_table.tsv"),
+                             "TFM/results_w_comention/fc_high_confusion_table.tsv"),
             sep = "\t",
             quote = FALSE,
             col.names = NA)
