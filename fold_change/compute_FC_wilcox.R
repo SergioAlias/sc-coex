@@ -61,11 +61,11 @@ pval_cols <- c('hpo',
                'tissue',
                'annotation',
                'wilcoxon-pval',
-               'wicoxon-sign',
+               #'wicoxon-sign',
                'high_wil_pval',
-               'high_wil_sign',
-               'low_wil_pval',
-               'low_wil_sign')
+               #'high_wil_sign',
+               'low_wil_pval')#,
+               #'low_wil_sign')
 
 
 
@@ -103,44 +103,49 @@ for (i in seq_along(tis)){
       message("    - Cluster ", cluster, ": ", cluster_name, "...")
       tis_clus_FC <- tis_FC[Cluster == cluster]
       fc_hpo_genes <- tis_clus_FC[Gene %in% genes]$log2FC
-      fcst_hpo_genes <- tis_clus_FC[Gene %in% genes]$log2FC_single_tissue
-      rnd_sample_size <- length(fc_hpo_genes)
-      # creating objects for storing distributions
+      fcst_hpo_genes <- tis_clus_FC[Gene %in% genes]$log2FC_single_tissue 
+      fc_back_genes <- tis_clus_FC[!(Gene %in% genes)]$log2FC # los background
+      fcst_back_genes <- tis_clus_FC[!(Gene %in% genes)]$log2FC_single_tissue # otra vez los background pero de fcst
+      # rnd_sample_size <- length(fc_hpo_genes)
+      # # creating objects for storing distributions
       fc_df <- data.frame(Subset = rep('HPOgenes', length(fc_hpo_genes)), FC = fc_hpo_genes)
       fcst_df <- data.frame(Subset = rep('HPOgenes', length(fcst_hpo_genes)), FC = fcst_hpo_genes)
-      df_list_fc <- list('HPOgenes' = fc_df)
-      df_list_fcst <- list('HPOgenes' = fcst_df)
-      rm(fc_df)
-      rm(fcst_df)
+      fc_df <- rbind(dc_df, data.frame(Subset = rep('Random', length(fc_hpo_genes)), FC = fc_hpo_genes))
+      # df_list_fc <- list('HPOgenes' = fc_df)
+      # df_list_fcst <- list('HPOgenes' = fcst_df)
+      # rm(fc_df)
+      # rm(fcst_df)
       # sampling 1000 random FC distributions
-      set.seed(seed)
-      for (r in c(1:rnd_samples)) {
-        rnd_genes <- sample(1:nrow(tis_clus_FC), rnd_sample_size)
-        rnd_fc <- tis_clus_FC[rnd_genes, log2FC]
-        rnd_fcst <- tis_clus_FC[rnd_genes, log2FC_single_tissue]
-        cname <- paste0('random_', r)
-        to_add_fc <- data.frame(Subset = rep(cname, length(rnd_fc)), FC = rnd_fc)
-        to_add_fcst <- data.frame(Subset = rep(cname, length(rnd_fcst)), FC = rnd_fcst)
-        df_list_fc[[cname]] <- to_add_fc
-        df_list_fcst[[cname]] <- to_add_fcst
-      }
-      # wilcoxon tests
-      rnd_1000_distr_fc <- c()
-      rnd_1000_distr_fcst <- c()
-      rnd_1000_distr_fc_abs <- c()
-      rnd_1000_distr_fcst_abs <- c()
-      for (i in 2:length(df_list_fc)) {
-        rnd_1000_distr_fc <- c(rnd_1000_distr_fc, df_list_fc[[i]]$FC)
-        rnd_1000_distr_fcst <- c(rnd_1000_distr_fcst, df_list_fcst[[i]]$FC)
-        rnd_1000_distr_fc_abs <- c(rnd_1000_distr_fc_abs, df_list_fc[[i]]$FC %>% abs())
-        rnd_1000_distr_fcst_abs <- c(rnd_1000_distr_fcst_abs, df_list_fcst[[i]]$FC %>% abs())
-      }
-      message('    - Performing 3 wilcox_tests x 2 FC values')
+      # set.seed(seed)
+      # for (r in c(1:rnd_samples)) {
+      #   rnd_genes <- sample(1:nrow(tis_clus_FC), rnd_sample_size)
+      #   rnd_fc <- tis_clus_FC[rnd_genes, log2FC]
+      #   rnd_fcst <- tis_clus_FC[rnd_genes, log2FC_single_tissue]
+      #   cname <- paste0('random_', r)
+      #   to_add_fc <- data.frame(Subset = rep(cname, length(rnd_fc)), FC = rnd_fc)
+      #   to_add_fcst <- data.frame(Subset = rep(cname, length(rnd_fcst)), FC = rnd_fcst)
+      #   df_list_fc[[cname]] <- to_add_fc
+      #   df_list_fcst[[cname]] <- to_add_fcst
+      # }
+      # # wilcoxon tests
+      # rnd_1000_distr_fc <- c()
+      # rnd_1000_distr_fcst <- c()
+      # rnd_1000_distr_fc_abs <- c()
+      # rnd_1000_distr_fcst_abs <- c()
+      # for (i in 2:length(df_list_fc)) {
+      #   rnd_1000_distr_fc <- c(rnd_1000_distr_fc, df_list_fc[[i]]$FC)
+      #   rnd_1000_distr_fcst <- c(rnd_1000_distr_fcst, df_list_fcst[[i]]$FC)
+      #   rnd_1000_distr_fc_abs <- c(rnd_1000_distr_fc_abs, df_list_fc[[i]]$FC %>% abs())
+      #   rnd_1000_distr_fcst_abs <- c(rnd_1000_distr_fcst_abs, df_list_fcst[[i]]$FC %>% abs())
+      # }
+      message('    - Performing 3 Kolmogorov-Smirnov tests x 2 FC values')
       
       hpo_df_fc_abs <- df_list_fc[[1]]
       hpo_df_fc_abs$FC <- hpo_df_fc_abs$FC %>% abs()
       wil_test_1000_fc_abs <- hpo_df_fc_abs
       wil_test_1000_fc <- df_list_fc[[1]]
+      wil_test_1000_fc <- 
+      
       
       hpo_df_fcst_abs <- df_list_fcst[[1]]
       hpo_df_fcst_abs$FC <- hpo_df_fcst_abs$FC %>% abs()
@@ -247,11 +252,11 @@ for (i in seq_along(tis)){
                                   'tissue' = cluster,
                                   'annotation' = cluster_name,
                                   'wilcoxon-pval' = stat.test.fc$p,
-                                  'wicoxon-sign' = stat.test.fc$p.signif,
+                                  #'wicoxon-sign' = stat.test.fc$p.signif,
                                   'high_wil_pval' = stat.test.high.fc$p,
-                                  'high_wil_sign' = stat.test.high.fc$p.signif,
-                                  'low_wil_pval' = stat.test.low.fc$p,
-                                  'low_wil_sign' = stat.test.low.fc$p.signif)
+                                  #'high_wil_sign' = stat.test.high.fc$p.signif,
+                                  'low_wil_pval' = stat.test.low.fc$p)#,
+                                  #'low_wil_sign' = stat.test.low.fc$p.signif)
       
       row_to_add_fcst <- data.frame('hpo' = hp_code,
                                   'hpo-name' = hp_name,
@@ -259,11 +264,11 @@ for (i in seq_along(tis)){
                                   'tissue' = cluster,
                                   'annotation' = cluster_name,
                                   'wilcoxon-pval' = stat.test.fcst$p,
-                                  'wicoxon-sign' = stat.test.fcst$p.signif,
+                                  #'wicoxon-sign' = stat.test.fcst$p.signif,
                                   'high_wil_pval' = stat.test.high.fcst$p,
-                                  'high_wil_sign' = stat.test.high.fcst$p.signif,
-                                  'low_wil_pval' = stat.test.low.fcst$p,
-                                  'low_wil_sign' = stat.test.low.fcst$p.signif)
+                                  #'high_wil_sign' = stat.test.high.fcst$p.signif,
+                                  'low_wil_pval' = stat.test.low.fcst$p)#,
+                                  #'low_wil_sign' = stat.test.low.fcst$p.signif)
       
       pval_results_fc <- rbind(pval_results_fc, row_to_add_fc)
       pval_results_fcst <- rbind(pval_results_fcst, row_to_add_fcst)

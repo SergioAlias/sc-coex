@@ -222,7 +222,7 @@ get_pval_wil <- function(hpo, cluster){
   xlim <- layer_scales(plot)$x$range$range[2]
   
   plot <- plot +
-    annotate("label", x = xlim*0.7, y = ylim, label = paste0('wilcox_test p-val: \n', stat.test$p.value))
+    annotate("label", x = xlim*0.7, y = ylim, label = paste0('ks_test p-val: \n', stat.test$p.value))
   
   plot.no.abs <- ggplot(wil_test_1000_no_abs, aes(COEX, fill = Subset, colour = Subset)) + geom_density(alpha = 0.2) +
     labs(title=paste0(dataset, ' ', tissue, '-', cluster, ' (', cluster_ann, ') for\n', paste0(substring(hpo, 1, 2), ":", substring(hpo, 3)), ' (', hpo_name, ')'), y = 'frecuency') +
@@ -232,10 +232,10 @@ get_pval_wil <- function(hpo, cluster){
   xlim <- layer_scales(plot.no.abs)$x$range$range[2]
   
   plot.high <- plot.no.abs +
-    annotate("label", x = xlim*0.7, y = ylim, label = paste0('wilcox_test p-val: \n', stat.test.high$p.value))
+    annotate("label", x = xlim*0.7, y = ylim, label = paste0('ks_test p-val: \n', stat.test.high$p.value))
   
   plot.low <- plot.no.abs +
-    annotate("label", x = xlim*0.7, y = ylim, label = paste0('wilcox_test p-val: \n', stat.test.low$p.value))
+    annotate("label", x = xlim*0.7, y = ylim, label = paste0('ks_test p-val: \n', stat.test.low$p.value))
   
   # output row to the dataframe
   row_to_add <- data.frame('hpo' = hpo,
