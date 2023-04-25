@@ -1,5 +1,5 @@
 # Sergio Alías, 20220614
-# Last modified 20230419
+# Last modified 20230425
 
 # plot_coex.R
 
@@ -63,16 +63,16 @@ pval_cols <- c('hpo',
                'annotation',
                'pval',
                'wilcoxon-pval',
-               'wicoxon-sign',
-               'effsize',
-               'effsize-sign',
+               #'wicoxon-sign',
+               #'effsize',
+               #'effsize-sign',
                'mean_coex',
                'high_pval',
                'high_wil_pval',
-               'high_wil_sign',
+               #'high_wil_sign',
                'low_pval',
-               'low_wil_pval',
-               'low_wil_sign')
+               'low_wil_pval')#,
+               #'low_wil_sign')
 
 pval_results <- data.frame(matrix(ncol=length(pval_cols),nrow=0, dimnames=list(NULL, pval_cols)))
 
@@ -97,7 +97,7 @@ get_pval_wil <- function(hpo, cluster){
   }
   setwd(wdir)
   sub_coex <- coex[genes, genes]  
-
+  
   # Extracción de valores únicos de la matriz (es simétrica)
   coex_values <- sub_coex[lower.tri(sub_coex, diag = include_diag)]
   
@@ -106,7 +106,7 @@ get_pval_wil <- function(hpo, cluster){
 
   df_list <- list('HPOgenes' = coex_df)
   
-  rm(coex_df)
+  # rm(coex_df)
   
   # 1000 réplicas de genes al azar
   set.seed(seed)
@@ -154,38 +154,62 @@ get_pval_wil <- function(hpo, cluster){
   
   
   # wilcoxon test de las distribuciones
-  rnd_1000_distr <- c()
-  rnd_1000_distr_no_abs <- c()
+  # rnd_1000_distr <- c()
+  # rnd_1000_distr_no_abs <- c()
+  # 
+  # for (i in 2:length(df_list)) {
+  #   rnd_1000_distr <- c(rnd_1000_distr, df_list[[i]]$COEX %>% abs())
+  #   rnd_1000_distr_no_abs <- c(rnd_1000_distr_no_abs, df_list[[i]]$COEX)
+  # }
+  message(paste0('Performing three Kolmogorov-Smirnov tests (', hpo, ' ', tissue, '-', cluster, ')... ')) # , i-1, ' random samples\n'))
   
-  for (i in 2:length(df_list)) {
-    rnd_1000_distr <- c(rnd_1000_distr, df_list[[i]]$COEX %>% abs())
-    rnd_1000_distr_no_abs <- c(rnd_1000_distr_no_abs, df_list[[i]]$COEX)
-  }
-  message(paste0('Performing three wilcox_tests (', hpo, ' ', tissue, '-', cluster, ')... ', i-1, ' random samples\n'))
+  # hpo_df <- df_list[[1]]
+  # hpo_df$COEX <- hpo_df$COEX %>% abs()
+  # wil_test_1000 <- hpo_df
+  # wil_test_1000_no_abs <- df_list[[1]]
+  # to_add <- data.frame(Subset = rep('Random', length(rnd_1000_distr)), COEX = rnd_1000_distr)
+  # to_add_no_abs <- data.frame(Subset = rep('Random', length(rnd_1000_distr_no_abs)), COEX = rnd_1000_distr_no_abs)
+  # wil_test_1000 <- rbind(wil_test_1000, to_add)
+  # wil_test_1000_no_abs <- rbind(wil_test_1000_no_abs, to_add_no_abs)
   
-  hpo_df <- df_list[[1]]
-  hpo_df$COEX <- hpo_df$COEX %>% abs()
-  wil_test_1000 <- hpo_df
-  wil_test_1000_no_abs <- df_list[[1]]
-  to_add <- data.frame(Subset = rep('Random', length(rnd_1000_distr)), COEX = rnd_1000_distr)
-  to_add_no_abs <- data.frame(Subset = rep('Random', length(rnd_1000_distr_no_abs)), COEX = rnd_1000_distr_no_abs)
-  wil_test_1000 <- rbind(wil_test_1000, to_add)
-  wil_test_1000_no_abs <- rbind(wil_test_1000_no_abs, to_add_no_abs)
   
-  stat.test <- wil_test_1000 %>% 
-    wilcox_test(COEX ~ Subset, alternative = "greater") %>%
-    add_significance()
-  stat.test
   
-  stat.test.high <- wil_test_1000_no_abs %>% 
-    wilcox_test(COEX ~ Subset, alternative = "greater") %>%
-    add_significance()
-  stat.test.high
+  sub_background <- coex[-which(rownames(coex) %in% genes), -which(colnames(coex) %in% genes)]
+  back_values <- sub_background[lower.tri(sub_background, diag = include_diag)]
+  back_df <- data.frame(Subset = rep('Random', length(back_values)), COEX = back_values)
   
-  stat.test.low <- wil_test_1000_no_abs %>% 
-    wilcox_test(COEX ~ Subset, alternative = "less") %>%
-    add_significance()
-  stat.test.low
+  wil_test_1000_no_abs <- rbind(coex_df, back_df)
+  wil_test_1000 <- wil_test_1000_no_abs
+  wil_test_1000$COEX <- abs(wil_test_1000$COEX)
+  
+  
+  stat.test <- ks.test(wil_test_1000$COEX[wil_test_1000$Subset == "HPOgenes"],
+                       wil_test_1000$COEX[wil_test_1000$Subset == "Random"],
+                       alternative = "greater")  
+  
+  stat.test.high <- ks.test(wil_test_1000_no_abs$COEX[wil_test_1000_no_abs$Subset == "HPOgenes"],
+                            wil_test_1000_no_abs$COEX[wil_test_1000_no_abs$Subset == "Random"],
+                            alternative = "greater")
+  
+  stat.test.low <- ks.test(wil_test_1000_no_abs$COEX[wil_test_1000_no_abs$Subset == "HPOgenes"],
+                           wil_test_1000_no_abs$COEX[wil_test_1000_no_abs$Subset == "Random"],
+                           alternative = "less")
+  
+  
+  # stat.test <- wil_test_1000 %>% 
+  #   wilcox_test(COEX ~ Subset, alternative = "greater") %>%
+  #   add_significance()
+  # stat.test
+  # 
+  # stat.test.high <- wil_test_1000_no_abs %>% 
+  #   wilcox_test(COEX ~ Subset, alternative = "greater") %>%
+  #   add_significance()
+  # stat.test.high
+  # 
+  # stat.test.low <- wil_test_1000_no_abs %>% 
+  #   wilcox_test(COEX ~ Subset, alternative = "less") %>%
+  #   add_significance()
+  # stat.test.low
   
   effsize <- wil_test_1000 %>% wilcox_effsize(COEX ~ Subset, alternative = "greater")
   
@@ -198,7 +222,7 @@ get_pval_wil <- function(hpo, cluster){
   xlim <- layer_scales(plot)$x$range$range[2]
   
   plot <- plot +
-    annotate("label", x = xlim*0.7, y = ylim, label = paste0('wilcox_test p-val: \n', stat.test$p, ' (', stat.test$p.signif, ')'))
+    annotate("label", x = xlim*0.7, y = ylim, label = paste0('wilcox_test p-val: \n', stat.test$p.value))
   
   plot.no.abs <- ggplot(wil_test_1000_no_abs, aes(COEX, fill = Subset, colour = Subset)) + geom_density(alpha = 0.2) +
     labs(title=paste0(dataset, ' ', tissue, '-', cluster, ' (', cluster_ann, ') for\n', paste0(substring(hpo, 1, 2), ":", substring(hpo, 3)), ' (', hpo_name, ')'), y = 'frecuency') +
@@ -208,10 +232,10 @@ get_pval_wil <- function(hpo, cluster){
   xlim <- layer_scales(plot.no.abs)$x$range$range[2]
   
   plot.high <- plot.no.abs +
-    annotate("label", x = xlim*0.7, y = ylim, label = paste0('wilcox_test p-val: \n', stat.test.high$p, ' (', stat.test.high$p.signif, ')'))
+    annotate("label", x = xlim*0.7, y = ylim, label = paste0('wilcox_test p-val: \n', stat.test.high$p.value))
   
   plot.low <- plot.no.abs +
-    annotate("label", x = xlim*0.7, y = ylim, label = paste0('wilcox_test p-val: \n', stat.test.low$p, ' (', stat.test.low$p.signif, ')'))
+    annotate("label", x = xlim*0.7, y = ylim, label = paste0('wilcox_test p-val: \n', stat.test.low$p.value))
   
   # output row to the dataframe
   row_to_add <- data.frame('hpo' = hpo,
@@ -219,17 +243,17 @@ get_pval_wil <- function(hpo, cluster){
                            'tissue' = paste0(tissue, '-', cluster),
                            'annotation' = cluster_ann,
                            'pval' = pvalue,
-                           'wilcoxon-pval' = stat.test$p,
-                           'wicoxon-sign' = stat.test$p.signif,
-                           'effsize' = unname(effsize$effsize),
-                           'effsize-sign' = effsize$magnitude,
+                           'wilcoxon-pval' = stat.test$p.value,
+                           #'wicoxon-sign' = stat.test$p.signif,
+                           #'effsize' = unname(effsize$effsize),
+                           #'effsize-sign' = effsize$magnitude,
                            'mean_coex' = df_list[['HPOgenes']]$COEX %>% abs() %>% mean(),
                            'high_pval'= high_pvalue,
-                           'high_wil_pval' = stat.test.high$p,
-                           'high_wil_sign' = stat.test.high$p.signif,
+                           'high_wil_pval' = stat.test.high$p.value,
+                           #'high_wil_sign' = stat.test.high$p.signif,
                            'low_pval' = low_pvalue,
-                           'low_wil_pval' = stat.test.low$p,
-                           'low_wil_sign' = stat.test.low$p.signif)
+                           'low_wil_pval' = stat.test.low$p.value)#,
+                           #'low_wil_sign' = stat.test.low$p.signif)
   return(list(row_to_add, plot, plot.high, plot.low))
 }
 
