@@ -16,6 +16,7 @@ library(data.table)
 ### Input
 
 urales_home <- "/run/user/1000/gvfs/sftp:host=urales/home/salias/TFM"
+urales_home <- "/run/user/1013/gvfs/sftp:host=urales,user=salias/home/salias/TFM"
 
 file_names <- list.files(file.path(urales_home, "results_w_comention"), pattern = "\\.tsv$", full.names = FALSE)
 
@@ -51,7 +52,9 @@ results <- data.table(tissue = character(),
                       # Prev = numeric(),
                       # ACC = numeric(),
                       F1 = numeric(),
-                      MCC = numeric())#,
+                      MCC = numeric(),
+                      test = numeric()
+                      )#,
                       # FM = numeric(),
                       # BM = numeric(),
                       # MK = numeric(),
@@ -83,7 +86,9 @@ for (i in c(1:nrow(table))){
                         # Prev = (TP+FN)/(TP+TN+FP+FN),
                         # ACC = (TP+TN)/(TP+TN+FP+FN),
                         F1 = (2*TP)/((2*TP)+FP+FN),
-                        MCC = (TP*TN-FP*FN)/sqrt((TP+FP)*(TP+FN)*(TN+FP)*(TN+FN)))#,
+                        MCC = ((TP*TN-FP*FN)/sqrt((TP+FP)*(TP+FN)*(TN+FP)*(TN+FN))),
+                        test = 0
+                        )#,
                         # FM = sqrt((TP/(TP+FP))*(TP/(TP+FN))),
                         # BM = (TP/(TP+FN))+(TN/(TN+FP))-1,
                         # MK = (TP/(TP+FP))+(TN/(TN+FN))-1,
