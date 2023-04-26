@@ -72,7 +72,8 @@ results <- fread(file.path(urales_home,
                            tissue,
                            paste0("wil_results_fcst_",
                                   tissue,
-                                  "_corrected.tsv"))
+                                  #"_corrected.tsv"))
+                                  ".tsv"))
                  )
 
 annotations <- fread(file.path(urales_home,
@@ -129,6 +130,7 @@ rm(comentions)
 
 ### Check if the comention is between the HPO and the desired cell type
 
+message("Generating file")
 
 sign.results <- data.table()
 
@@ -166,7 +168,7 @@ fwrite(sign.results, file = paste0(file.path(urales_home,
 
 #-----#
 
-
+message("Done")
 
 #}
 
