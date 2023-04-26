@@ -1,13 +1,14 @@
 #!/usr/bin/env Rscript
 
 # Sergio Alías, 20230324
-# Last modified 20230424
+# Last modified 20230426
 
 # Script for applying Bonferroni correction to p-values
 
 library(data.table)
 
 urales_home <- "/run/user/1000/gvfs/sftp:host=urales/home/salias/TFM"
+urales_home <- "/run/user/1013/gvfs/sftp:host=urales,user=salias/home/salias/TFM"
 tissues <- c("blood", "liver", "lung", "pancreas", "spleen", "stomach", "testis")
 tissues <- c("adipose-tissue",
              "blood",
@@ -53,8 +54,8 @@ dt <- fread(file.path(urales_home,
 cols_to_correct <- c("wilcoxon.pval", "high_wil_pval", "low_wil_pval")
 dt[, (cols_to_correct) := lapply(.SD, function(x) pmin(1, x * nrow(dt))), .SDcols = cols_to_correct]
 
-cols_to_remove <- c("wicoxon.sign", "high_wil_sign", "low_wil_sign") # , "effsize", "effsize.sign")
-dt <- dt[, !cols_to_remove, with = FALSE]
+# cols_to_remove <- c("wicoxon.sign", "high_wil_sign", "low_wil_sign") # , "effsize", "effsize.sign")
+# dt <- dt[, !cols_to_remove, with = FALSE]
 
 
 fwrite(dt,

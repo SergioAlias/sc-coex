@@ -1,5 +1,5 @@
 # Sergio Alías, 20220614
-# Last modified 20230425
+# Last modified 20230426
 
 # plot_coex.R
 
@@ -183,17 +183,20 @@ get_pval_wil <- function(hpo, cluster){
   wil_test_1000$COEX <- abs(wil_test_1000$COEX)
   
   
+message("    - Background: ", length(wil_test_1000$COEX[wil_test_1000$Subset == "Random"]))
+message("    - HPO-related: ", length(wil_test_1000$COEX[wil_test_1000$Subset == "HPOgenes"]))
+  
   stat.test <- ks.test(wil_test_1000$COEX[wil_test_1000$Subset == "HPOgenes"],
                        wil_test_1000$COEX[wil_test_1000$Subset == "Random"],
-                       alternative = "greater")  
+                       alternative = "less")  
   
   stat.test.high <- ks.test(wil_test_1000_no_abs$COEX[wil_test_1000_no_abs$Subset == "HPOgenes"],
                             wil_test_1000_no_abs$COEX[wil_test_1000_no_abs$Subset == "Random"],
-                            alternative = "greater")
+                            alternative = "less")
   
   stat.test.low <- ks.test(wil_test_1000_no_abs$COEX[wil_test_1000_no_abs$Subset == "HPOgenes"],
                            wil_test_1000_no_abs$COEX[wil_test_1000_no_abs$Subset == "Random"],
-                           alternative = "less")
+                           alternative = "greater")
   
   
   # stat.test <- wil_test_1000 %>% 
@@ -211,31 +214,31 @@ get_pval_wil <- function(hpo, cluster){
   #   add_significance()
   # stat.test.low
   
-  effsize <- wil_test_1000 %>% wilcox_effsize(COEX ~ Subset, alternative = "greater")
+  #effsize <- wil_test_1000 %>% wilcox_effsize(COEX ~ Subset, alternative = "greater")
   
   # plot
-  plot <- ggplot(wil_test_1000, aes(COEX, fill = Subset, colour = Subset)) + geom_density(alpha = 0.2) +
-    labs(title=paste0(dataset, ' ', tissue, '-', cluster, ' (', cluster_ann, ') for\n', paste0(substring(hpo, 1, 2), ":", substring(hpo, 3)), ' (', hpo_name, ')'), y = 'frecuency') +
-    theme(plot.title = element_text(hjust=0.5))
-
-  ylim <- layer_scales(plot)$y$range$range[2]
-  xlim <- layer_scales(plot)$x$range$range[2]
-  
-  plot <- plot +
-    annotate("label", x = xlim*0.7, y = ylim, label = paste0('ks_test p-val: \n', stat.test$p.value))
-  
-  plot.no.abs <- ggplot(wil_test_1000_no_abs, aes(COEX, fill = Subset, colour = Subset)) + geom_density(alpha = 0.2) +
-    labs(title=paste0(dataset, ' ', tissue, '-', cluster, ' (', cluster_ann, ') for\n', paste0(substring(hpo, 1, 2), ":", substring(hpo, 3)), ' (', hpo_name, ')'), y = 'frecuency') +
-    theme(plot.title = element_text(hjust=0.5))
-  
-  ylim <- layer_scales(plot.no.abs)$y$range$range[2]
-  xlim <- layer_scales(plot.no.abs)$x$range$range[2]
-  
-  plot.high <- plot.no.abs +
-    annotate("label", x = xlim*0.7, y = ylim, label = paste0('ks_test p-val: \n', stat.test.high$p.value))
-  
-  plot.low <- plot.no.abs +
-    annotate("label", x = xlim*0.7, y = ylim, label = paste0('ks_test p-val: \n', stat.test.low$p.value))
+  # plot <- ggplot(wil_test_1000, aes(COEX, fill = Subset, colour = Subset)) + geom_density(alpha = 0.2) +
+  #   labs(title=paste0(dataset, ' ', tissue, '-', cluster, ' (', cluster_ann, ') for\n', paste0(substring(hpo, 1, 2), ":", substring(hpo, 3)), ' (', hpo_name, ')'), y = 'frecuency') +
+  #   theme(plot.title = element_text(hjust=0.5))
+  # 
+  # ylim <- layer_scales(plot)$y$range$range[2]
+  # xlim <- layer_scales(plot)$x$range$range[2]
+  # 
+  # plot <- plot +
+  #   annotate("label", x = xlim*0.7, y = ylim, label = paste0('ks_test p-val: \n', stat.test$p.value))
+  # 
+  # plot.no.abs <- ggplot(wil_test_1000_no_abs, aes(COEX, fill = Subset, colour = Subset)) + geom_density(alpha = 0.2) +
+  #   labs(title=paste0(dataset, ' ', tissue, '-', cluster, ' (', cluster_ann, ') for\n', paste0(substring(hpo, 1, 2), ":", substring(hpo, 3)), ' (', hpo_name, ')'), y = 'frecuency') +
+  #   theme(plot.title = element_text(hjust=0.5))
+  # 
+  # ylim <- layer_scales(plot.no.abs)$y$range$range[2]
+  # xlim <- layer_scales(plot.no.abs)$x$range$range[2]
+  # 
+  # plot.high <- plot.no.abs +
+  #   annotate("label", x = xlim*0.7, y = ylim, label = paste0('ks_test p-val: \n', stat.test.high$p.value))
+  # 
+  # plot.low <- plot.no.abs +
+  #   annotate("label", x = xlim*0.7, y = ylim, label = paste0('ks_test p-val: \n', stat.test.low$p.value))
   
   # output row to the dataframe
   row_to_add <- data.frame('hpo' = hpo,
@@ -254,7 +257,7 @@ get_pval_wil <- function(hpo, cluster){
                            'low_pval' = low_pvalue,
                            'low_wil_pval' = stat.test.low$p.value)#,
                            #'low_wil_sign' = stat.test.low$p.signif)
-  return(list(row_to_add, plot, plot.high, plot.low))
+  return(list(row_to_add))#, plot, plot.high, plot.low))
 }
 
 
@@ -269,15 +272,15 @@ message("## plot_coex.R ##")
 message("#################\n")
 message(paste0("Starting analysis for ", opt$hpo, " in ", dataset, ' ', opt$tissue, " (", opt$max_cluster + 1, " clusters, ", opt$random_samples, " random samples)\n"))
 
-hpo_plots <- vector(mode='list', length = max_cluster+1)
-hpo_plots_high <- vector(mode='list', length = max_cluster+1)
-hpo_plots_low <- vector(mode='list', length = max_cluster+1)
+# hpo_plots <- vector(mode='list', length = max_cluster+1)
+# hpo_plots_high <- vector(mode='list', length = max_cluster+1)
+# hpo_plots_low <- vector(mode='list', length = max_cluster+1)
 for (j in (0:max_cluster)){
   results <- get_pval_wil(hpo, j)
    pval_results <- rbind(pval_results, results[[1]])
-  hpo_plots[[j+1]] <- results[[2]]
-  hpo_plots_high[[j+1]] <- results[[3]]
-  hpo_plots_low[[j+1]] <- results[[4]]
+  # hpo_plots[[j+1]] <- results[[2]]
+  # hpo_plots_high[[j+1]] <- results[[3]]
+  # hpo_plots_low[[j+1]] <- results[[4]]
 }
 
 rm(j)
@@ -300,36 +303,36 @@ message(paste0("p-val and wilcoxon results saved in ", outfile))
 
 #### Saving plots
 
-pdf(paste0(hpo, '/wil_plots_extreme_', dataset, '_', tissue, '_', hpo, '.pdf'))
-
-for (j in 1:length(hpo_plots)){
-  print(hpo_plots[[j]])
-}
-
-invisible(dev.off())
-
-message(paste0("Plots for extreme values saved in ", paste0(hpo, '/wil_plots_extreme_', dataset, '_', tissue, '_', hpo, '.pdf')))
-
-##### High values
-
-pdf(paste0(hpo, '/wil_plots_high_', dataset, '_', tissue, '_', hpo, '.pdf'))
-
-for (j in 1:length(hpo_plots_high)){
-  print(hpo_plots_high[[j]])
-}
-
-invisible(dev.off())
-
-message(paste0("Plots for high values saved in ", paste0(hpo, '/wil_plots_high_', dataset, '_', tissue, '_', hpo, '.pdf')))
-
-##### Low values
-
-pdf(paste0(hpo, '/wil_plots_low_', dataset, '_', tissue, '_', hpo, '.pdf'))
-
-for (j in 1:length(hpo_plots_low)){
-  print(hpo_plots_low[[j]])
-}
-
-invisible(dev.off())
-
-message(paste0("Plots for low values saved in ", paste0(hpo, '/wil_plots_low_', dataset, '_', tissue, '_', hpo, '.pdf')))
+# pdf(paste0(hpo, '/wil_plots_extreme_', dataset, '_', tissue, '_', hpo, '.pdf'))
+# 
+# for (j in 1:length(hpo_plots)){
+#   print(hpo_plots[[j]])
+# }
+# 
+# invisible(dev.off())
+# 
+# message(paste0("Plots for extreme values saved in ", paste0(hpo, '/wil_plots_extreme_', dataset, '_', tissue, '_', hpo, '.pdf')))
+# 
+# ##### High values
+# 
+# pdf(paste0(hpo, '/wil_plots_high_', dataset, '_', tissue, '_', hpo, '.pdf'))
+# 
+# for (j in 1:length(hpo_plots_high)){
+#   print(hpo_plots_high[[j]])
+# }
+# 
+# invisible(dev.off())
+# 
+# message(paste0("Plots for high values saved in ", paste0(hpo, '/wil_plots_high_', dataset, '_', tissue, '_', hpo, '.pdf')))
+# 
+# ##### Low values
+# 
+# pdf(paste0(hpo, '/wil_plots_low_', dataset, '_', tissue, '_', hpo, '.pdf'))
+# 
+# for (j in 1:length(hpo_plots_low)){
+#   print(hpo_plots_low[[j]])
+# }
+# 
+# invisible(dev.off())
+# 
+# message(paste0("Plots for low values saved in ", paste0(hpo, '/wil_plots_low_', dataset, '_', tissue, '_', hpo, '.pdf')))

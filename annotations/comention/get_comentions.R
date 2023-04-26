@@ -1,7 +1,7 @@
 #!/usr/bin/env Rscript
 
 # Sergio Alías, 20230310
-# Last modified 20230424
+# Last modified 20230426
 
 # Script for getting commentions that explain coex / fc / fcst results
 # We need:
@@ -43,8 +43,9 @@ tissues <- c("adipose-tissue",
              "stomach",
              "testis")
 dataset <- "HPA"
-urales_home <- "/run/user/1013/gvfs/sftp:host=urales,user=salias/home/salias"
 urales_home <- "/run/user/1000/gvfs/sftp:host=urales/home/salias"
+urales_home <- "/run/user/1013/gvfs/sftp:host=urales,user=salias/home/salias"
+
 
 
 truth_tables_filt <- data.frame(TP = numeric(), TN = numeric(), FP = numeric(), FN = numeric()) # solo la primera vez
@@ -134,7 +135,8 @@ sign.results <- data.table()
 for (i in 1:nrow(results)){
   has.comention <- FALSE
   for (j in 1:nrow(HPO.comentions)){
-    if (gsub("HP", "HP:", results[i, hpo]) == HPO.comentions[j, HPO.id]){
+    # if (gsub("HP", "HP:", results[i, hpo]) == HPO.comentions[j, HPO.id]){ # coex
+    if (results[i, hpo] == HPO.comentions[j, HPO.id]){ # fc, fcst
       if (results[i, annotation] == HPO.comentions[j, ACT.name]){
         row.to.add <- cbind(results[i], HPO.comentions[j, list(str.sim, comentions, ratio, coment.pval)])
         sign.results <- rbind(sign.results, row.to.add)
@@ -170,16 +172,16 @@ fwrite(sign.results, file = paste0(file.path(urales_home,
 
 # Para cambiar extreme por high y low (Descomentar si ya se tiene el result_w_comention)
 
-sign.results <- fread(file.path(urales_home,
-                          "TFM/results_w_comention",
-                          tissue,
-                          paste0(tissue,
-                                 "_",
-                                 dataset,
-                                 "_fc_results_w_comention.tsv")))
-
-sign.results[, "wilcoxon.pval" := NULL]
-setnames(sign.results, "high_wil_pval", "wilcoxon.pval")
+# sign.results <- fread(file.path(urales_home,
+#                           "TFM/results_w_comention",
+#                           tissue,
+#                           paste0(tissue,
+#                                  "_",
+#                                  dataset,
+#                                  "_fc_results_w_comention.tsv")))
+# 
+# sign.results[, "wilcoxon.pval" := NULL]
+# setnames(sign.results, "high_wil_pval", "wilcoxon.pval")
 
 
 ###########    PARA QUEDARSE SOLO CON EL MÍNIMO DE CADA PAR HPO-CELLTYPE ########
@@ -309,14 +311,14 @@ rownames(truth_tables)[nrow(truth_tables)] <- tissue
 
 write.table(truth_tables_filt,
             file = file.path(urales_home,
-                             "TFM/results_w_comention/fc_high_confusion_table_filtered.tsv"),
+                             "TFM/results_w_comention/fcst_extreme_confusion_table_filtered.tsv"),
             sep = "\t",
             quote = FALSE,
             col.names = NA)
 
 write.table(truth_tables,
             file = file.path(urales_home,
-                             "TFM/results_w_comention/fc_high_confusion_table.tsv"),
+                             "TFM/results_w_comention/fcst_extreme_confusion_table.tsv"),
             sep = "\t",
             quote = FALSE,
             col.names = NA)

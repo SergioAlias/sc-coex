@@ -1,7 +1,7 @@
 #!/usr/bin/env Rscript
 
 # Sergio Alías, 20230419
-# Last modified 20230420
+# Last modified 20230426
 
 # Script for obtaining gene FC distributions associated to HPOs and making wilcox test against random distributions
 
@@ -89,13 +89,13 @@ for (i in seq_along(tis)){
     genes <- hpo_genes[[hp_code]]$EnsemblID
     message("-> ", hp_code, " - ", hp_name)
     clus <- unique(tis_FC$Cluster)
-    hpo_plots_fc <- vector(mode='list', length = length(clus))
-    hpo_plots_high_fc <- vector(mode='list', length = length(clus))
-    hpo_plots_low_fc <- vector(mode='list', length = length(clus))
-    
-    hpo_plots_fcst <- vector(mode='list', length = length(clus))
-    hpo_plots_high_fcst <- vector(mode='list', length = length(clus))
-    hpo_plots_low_fcst <- vector(mode='list', length = length(clus))
+    # hpo_plots_fc <- vector(mode='list', length = length(clus))
+    # hpo_plots_high_fc <- vector(mode='list', length = length(clus))
+    # hpo_plots_low_fc <- vector(mode='list', length = length(clus))
+    # 
+    # hpo_plots_fcst <- vector(mode='list', length = length(clus))
+    # hpo_plots_high_fcst <- vector(mode='list', length = length(clus))
+    # hpo_plots_low_fcst <- vector(mode='list', length = length(clus))
     
     for (j in seq_along(clus)){
       cluster <- clus[j]
@@ -110,7 +110,12 @@ for (i in seq_along(tis)){
       # # creating objects for storing distributions
       fc_df <- data.frame(Subset = rep('HPOgenes', length(fc_hpo_genes)), FC = fc_hpo_genes)
       fcst_df <- data.frame(Subset = rep('HPOgenes', length(fcst_hpo_genes)), FC = fcst_hpo_genes)
-      fc_df <- rbind(dc_df, data.frame(Subset = rep('Random', length(fc_hpo_genes)), FC = fc_hpo_genes))
+      fc_df <- rbind(fc_df, data.frame(Subset = rep('Random', length(fc_back_genes)), FC = fc_back_genes))
+      fcst_df <- rbind(fcst_df, data.frame(Subset = rep('Random', length(fcst_back_genes)), FC = fcst_back_genes))
+      fc_abs_df <-  fc_df # abs version of fc
+      fcst_abs_df <-  fcst_df # abs version of fcst
+      fc_abs_df$FC <- abs(fc_abs_df$FC)
+      fcst_abs_df$FC <- abs(fcst_abs_df$FC)
       # df_list_fc <- list('HPOgenes' = fc_df)
       # df_list_fcst <- list('HPOgenes' = fcst_df)
       # rm(fc_df)
@@ -138,112 +143,109 @@ for (i in seq_along(tis)){
       #   rnd_1000_distr_fc_abs <- c(rnd_1000_distr_fc_abs, df_list_fc[[i]]$FC %>% abs())
       #   rnd_1000_distr_fcst_abs <- c(rnd_1000_distr_fcst_abs, df_list_fcst[[i]]$FC %>% abs())
       # }
-      message('    - Performing 3 Kolmogorov-Smirnov tests x 2 FC values')
+      message('    - Performing 3 Kolmogorov-Smirnov tests x 2 FC values...')
       
-      hpo_df_fc_abs <- df_list_fc[[1]]
-      hpo_df_fc_abs$FC <- hpo_df_fc_abs$FC %>% abs()
-      wil_test_1000_fc_abs <- hpo_df_fc_abs
-      wil_test_1000_fc <- df_list_fc[[1]]
-      wil_test_1000_fc <- 
+      # hpo_df_fc_abs <- df_list_fc[[1]]
+      # hpo_df_fc_abs$FC <- hpo_df_fc_abs$FC %>% abs()
+      # wil_test_1000_fc_abs <- hpo_df_fc_abs
+      # wil_test_1000_fc <- df_list_fc[[1]]
+      # wil_test_1000_fc <- 
+      # 
+      # 
+      # hpo_df_fcst_abs <- df_list_fcst[[1]]
+      # hpo_df_fcst_abs$FC <- hpo_df_fcst_abs$FC %>% abs()
+      # wil_test_1000_fcst_abs <- hpo_df_fcst_abs
+      # wil_test_1000_fcst <- df_list_fcst[[1]]
+      # 
+      # to_add_fc_abs <- data.frame(Subset = rep('Random', length(rnd_1000_distr_fc_abs)), FC = rnd_1000_distr_fc_abs)
+      # to_add_fc <- data.frame(Subset = rep('Random', length(rnd_1000_distr_fc)), FC = rnd_1000_distr_fc)
+      # wil_test_1000_fc_abs <- rbind(wil_test_1000_fc_abs, to_add_fc_abs)
+      # wil_test_1000_fc <- rbind(wil_test_1000_fc, to_add_fc)
+      # 
+      # to_add_fcst_abs <- data.frame(Subset = rep('Random', length(rnd_1000_distr_fcst_abs)), FC = rnd_1000_distr_fcst_abs)
+      # to_add_fcst <- data.frame(Subset = rep('Random', length(rnd_1000_distr_fcst)), FC = rnd_1000_distr_fcst)
+      # wil_test_1000_fcst_abs <- rbind(wil_test_1000_fcst_abs, to_add_fcst_abs)
+      # wil_test_1000_fcst <- rbind(wil_test_1000_fcst, to_add_fcst)
       
+      message("    - Background: ", length(fc_abs_df$FC[fc_abs_df$Subset == "Random"]))
+      message("    - HPO-related: ", length(fc_abs_df$FC[fc_abs_df$Subset == "HPOgenes"]))
       
-      hpo_df_fcst_abs <- df_list_fcst[[1]]
-      hpo_df_fcst_abs$FC <- hpo_df_fcst_abs$FC %>% abs()
-      wil_test_1000_fcst_abs <- hpo_df_fcst_abs
-      wil_test_1000_fcst <- df_list_fcst[[1]]
+      stat.test.fc <- ks.test(fc_abs_df$FC[fc_abs_df$Subset == "HPOgenes"],
+                              fc_abs_df$FC[fc_abs_df$Subset == "Random"],
+                              alternative = "less") 
       
-      to_add_fc_abs <- data.frame(Subset = rep('Random', length(rnd_1000_distr_fc_abs)), FC = rnd_1000_distr_fc_abs)
-      to_add_fc <- data.frame(Subset = rep('Random', length(rnd_1000_distr_fc)), FC = rnd_1000_distr_fc)
-      wil_test_1000_fc_abs <- rbind(wil_test_1000_fc_abs, to_add_fc_abs)
-      wil_test_1000_fc <- rbind(wil_test_1000_fc, to_add_fc)
+      stat.test.high.fc <- ks.test(fc_df$FC[fc_df$Subset == "HPOgenes"],
+                                   fc_df$FC[fc_df$Subset == "Random"],
+                                   alternative = "less")
       
-      to_add_fcst_abs <- data.frame(Subset = rep('Random', length(rnd_1000_distr_fcst_abs)), FC = rnd_1000_distr_fcst_abs)
-      to_add_fcst <- data.frame(Subset = rep('Random', length(rnd_1000_distr_fcst)), FC = rnd_1000_distr_fcst)
-      wil_test_1000_fcst_abs <- rbind(wil_test_1000_fcst_abs, to_add_fcst_abs)
-      wil_test_1000_fcst <- rbind(wil_test_1000_fcst, to_add_fcst)
+      stat.test.low.fc <- ks.test(fc_df$FC[fc_df$Subset == "HPOgenes"],
+                                  fc_df$FC[fc_df$Subset == "Random"],
+                                  alternative = "greater") 
+  
       
-      stat.test.fc <- wil_test_1000_fc_abs %>% 
-        wilcox_test(FC ~ Subset, alternative = "greater") %>%
-        add_significance()
-      stat.test.fc
+
+      stat.test.fcst <- ks.test(fcst_abs_df$FC[fcst_abs_df$Subset == "HPOgenes"],
+                                fcst_abs_df$FC[fcst_abs_df$Subset == "Random"],
+                                alternative = "less") 
       
-      stat.test.high.fc <- wil_test_1000_fc %>% 
-        wilcox_test(FC ~ Subset, alternative = "greater") %>%
-        add_significance()
-      stat.test.high.fc
+      stat.test.high.fcst <- ks.test(fcst_df$FC[fcst_df$Subset == "HPOgenes"],
+                                     fcst_df$FC[fcst_df$Subset == "Random"],
+                                     alternative = "less")
       
-      stat.test.low.fc <- wil_test_1000_fc %>% 
-        wilcox_test(FC ~ Subset, alternative = "less") %>%
-        add_significance()
-      stat.test.low.fc
-      
-      
-      
-      stat.test.fcst <- wil_test_1000_fcst_abs %>% 
-        wilcox_test(FC ~ Subset, alternative = "greater") %>%
-        add_significance()
-      stat.test.fcst
-      
-      stat.test.high.fcst <- wil_test_1000_fcst %>% 
-        wilcox_test(FC ~ Subset, alternative = "greater") %>%
-        add_significance()
-      stat.test.high.fcst
-      
-      stat.test.low.fcst <- wil_test_1000_fcst %>% 
-        wilcox_test(FC ~ Subset, alternative = "less") %>%
-        add_significance()
-      stat.test.low.fcst
+      stat.test.low.fcst <- ks.test(fcst_df$FC[fcst_df$Subset == "HPOgenes"],
+                                    fcst_df$FC[fcst_df$Subset == "Random"],
+                                    alternative = "greater") 
       
       # plots
       
-      plot.fc <- ggplot(wil_test_1000_fc_abs, aes(FC, fill = Subset, colour = Subset)) + geom_density(alpha = 0.2) +
-        labs(title=paste0(tissue, ' ', cluster, ' (', cluster_name, ') for\n', hp_code, ' (', hp_name, ')'), y = 'frecuency') +
-        theme(plot.title = element_text(hjust=0.5))
-      
-      ylim <- layer_scales(plot.fc)$y$range$range[2]
-      xlim <- layer_scales(plot.fc)$x$range$range[2]
-      
-      plot.fc <- plot.fc +
-        annotate("label", x = xlim*0.7, y = ylim, label = paste0('wilcox_test p-val: \n', stat.test.fc$p, ' (', stat.test.fc$p.signif, ')'))
-      
-      plot.no.abs.fc <- ggplot(wil_test_1000_fc, aes(FC, fill = Subset, colour = Subset)) + geom_density(alpha = 0.2) +
-        labs(title=paste0(tissue, ' ', cluster, ' (', cluster_name, ') for\n', hp_code, ' (', hp_name, ')'), y = 'frecuency') +
-        theme(plot.title = element_text(hjust=0.5))
-      
-      ylim <- layer_scales(plot.no.abs.fc)$y$range$range[2]
-      xlim <- layer_scales(plot.no.abs.fc)$x$range$range[2]
-      
-      plot.high.fc <- plot.no.abs.fc +
-        annotate("label", x = xlim*0.7, y = ylim, label = paste0('wilcox_test p-val: \n', stat.test.high.fc$p, ' (', stat.test.high.fc$p.signif, ')'))
-      
-      plot.low.fc <- plot.no.abs.fc +
-        annotate("label", x = xlim*0.7, y = ylim, label = paste0('wilcox_test p-val: \n', stat.test.low.fc$p, ' (', stat.test.low.fc$p.signif, ')'))
-      
-      
-      
-      plot.fcst <- ggplot(wil_test_1000_fcst_abs, aes(FC, fill = Subset, colour = Subset)) + geom_density(alpha = 0.2) +
-        labs(title=paste0(tissue, ' ', cluster, ' (', cluster_name, ') for\n', hp_code, ' (', hp_name, ')'), y = 'frecuency') +
-        theme(plot.title = element_text(hjust=0.5))
-      
-      ylim <- layer_scales(plot.fcst)$y$range$range[2]
-      xlim <- layer_scales(plot.fcst)$x$range$range[2]
-      
-      plot.fcst <- plot.fcst +
-        annotate("label", x = xlim*0.7, y = ylim, label = paste0('wilcox_test p-val: \n', stat.test.fcst$p, ' (', stat.test.fcst$p.signif, ')'))
-      
-      plot.no.abs.fcst <- ggplot(wil_test_1000_fcst, aes(FC, fill = Subset, colour = Subset)) + geom_density(alpha = 0.2) +
-        labs(title=paste0(tissue, ' ', cluster, ' (', cluster_name, ') for\n', hp_code, ' (', hp_name, ')'), y = 'frecuency') +
-        theme(plot.title = element_text(hjust=0.5))
-      
-      ylim <- layer_scales(plot.no.abs.fcst)$y$range$range[2]
-      xlim <- layer_scales(plot.no.abs.fcst)$x$range$range[2]
-      
-      plot.high.fcst <- plot.no.abs.fcst +
-        annotate("label", x = xlim*0.7, y = ylim, label = paste0('wilcox_test p-val: \n', stat.test.high.fcst$p, ' (', stat.test.high.fcst$p.signif, ')'))
-      
-      plot.low.fcst <- plot.no.abs.fcst +
-        annotate("label", x = xlim*0.7, y = ylim, label = paste0('wilcox_test p-val: \n', stat.test.low.fcst$p, ' (', stat.test.low.fcst$p.signif, ')'))
-      
+      # plot.fc <- ggplot(wil_test_1000_fc_abs, aes(FC, fill = Subset, colour = Subset)) + geom_density(alpha = 0.2) +
+      #   labs(title=paste0(tissue, ' ', cluster, ' (', cluster_name, ') for\n', hp_code, ' (', hp_name, ')'), y = 'frecuency') +
+      #   theme(plot.title = element_text(hjust=0.5))
+      # 
+      # ylim <- layer_scales(plot.fc)$y$range$range[2]
+      # xlim <- layer_scales(plot.fc)$x$range$range[2]
+      # 
+      # plot.fc <- plot.fc +
+      #   annotate("label", x = xlim*0.7, y = ylim, label = paste0('wilcox_test p-val: \n', stat.test.fc$p, ' (', stat.test.fc$p.signif, ')'))
+      # 
+      # plot.no.abs.fc <- ggplot(wil_test_1000_fc, aes(FC, fill = Subset, colour = Subset)) + geom_density(alpha = 0.2) +
+      #   labs(title=paste0(tissue, ' ', cluster, ' (', cluster_name, ') for\n', hp_code, ' (', hp_name, ')'), y = 'frecuency') +
+      #   theme(plot.title = element_text(hjust=0.5))
+      # 
+      # ylim <- layer_scales(plot.no.abs.fc)$y$range$range[2]
+      # xlim <- layer_scales(plot.no.abs.fc)$x$range$range[2]
+      # 
+      # plot.high.fc <- plot.no.abs.fc +
+      #   annotate("label", x = xlim*0.7, y = ylim, label = paste0('wilcox_test p-val: \n', stat.test.high.fc$p, ' (', stat.test.high.fc$p.signif, ')'))
+      # 
+      # plot.low.fc <- plot.no.abs.fc +
+      #   annotate("label", x = xlim*0.7, y = ylim, label = paste0('wilcox_test p-val: \n', stat.test.low.fc$p, ' (', stat.test.low.fc$p.signif, ')'))
+      # 
+      # 
+      # 
+      # plot.fcst <- ggplot(wil_test_1000_fcst_abs, aes(FC, fill = Subset, colour = Subset)) + geom_density(alpha = 0.2) +
+      #   labs(title=paste0(tissue, ' ', cluster, ' (', cluster_name, ') for\n', hp_code, ' (', hp_name, ')'), y = 'frecuency') +
+      #   theme(plot.title = element_text(hjust=0.5))
+      # 
+      # ylim <- layer_scales(plot.fcst)$y$range$range[2]
+      # xlim <- layer_scales(plot.fcst)$x$range$range[2]
+      # 
+      # plot.fcst <- plot.fcst +
+      #   annotate("label", x = xlim*0.7, y = ylim, label = paste0('wilcox_test p-val: \n', stat.test.fcst$p, ' (', stat.test.fcst$p.signif, ')'))
+      # 
+      # plot.no.abs.fcst <- ggplot(wil_test_1000_fcst, aes(FC, fill = Subset, colour = Subset)) + geom_density(alpha = 0.2) +
+      #   labs(title=paste0(tissue, ' ', cluster, ' (', cluster_name, ') for\n', hp_code, ' (', hp_name, ')'), y = 'frecuency') +
+      #   theme(plot.title = element_text(hjust=0.5))
+      # 
+      # ylim <- layer_scales(plot.no.abs.fcst)$y$range$range[2]
+      # xlim <- layer_scales(plot.no.abs.fcst)$x$range$range[2]
+      # 
+      # plot.high.fcst <- plot.no.abs.fcst +
+      #   annotate("label", x = xlim*0.7, y = ylim, label = paste0('wilcox_test p-val: \n', stat.test.high.fcst$p, ' (', stat.test.high.fcst$p.signif, ')'))
+      # 
+      # plot.low.fcst <- plot.no.abs.fcst +
+      #   annotate("label", x = xlim*0.7, y = ylim, label = paste0('wilcox_test p-val: \n', stat.test.low.fcst$p, ' (', stat.test.low.fcst$p.signif, ')'))
+      # 
       # output
       
       row_to_add_fc <- data.frame('hpo' = hp_code,
@@ -251,11 +253,11 @@ for (i in seq_along(tis)){
                                   'tissue-name' = tissue,
                                   'tissue' = cluster,
                                   'annotation' = cluster_name,
-                                  'wilcoxon-pval' = stat.test.fc$p,
+                                  'wilcoxon-pval' = stat.test.fc$p.value,
                                   #'wicoxon-sign' = stat.test.fc$p.signif,
-                                  'high_wil_pval' = stat.test.high.fc$p,
+                                  'high_wil_pval' = stat.test.high.fc$p.value,
                                   #'high_wil_sign' = stat.test.high.fc$p.signif,
-                                  'low_wil_pval' = stat.test.low.fc$p)#,
+                                  'low_wil_pval' = stat.test.low.fc$p.value)#,
                                   #'low_wil_sign' = stat.test.low.fc$p.signif)
       
       row_to_add_fcst <- data.frame('hpo' = hp_code,
@@ -263,22 +265,22 @@ for (i in seq_along(tis)){
                                   'tissue-name' = tissue,
                                   'tissue' = cluster,
                                   'annotation' = cluster_name,
-                                  'wilcoxon-pval' = stat.test.fcst$p,
+                                  'wilcoxon-pval' = stat.test.fcst$p.value,
                                   #'wicoxon-sign' = stat.test.fcst$p.signif,
-                                  'high_wil_pval' = stat.test.high.fcst$p,
+                                  'high_wil_pval' = stat.test.high.fcst$p.value,
                                   #'high_wil_sign' = stat.test.high.fcst$p.signif,
-                                  'low_wil_pval' = stat.test.low.fcst$p)#,
+                                  'low_wil_pval' = stat.test.low.fcst$p.value)#,
                                   #'low_wil_sign' = stat.test.low.fcst$p.signif)
       
       pval_results_fc <- rbind(pval_results_fc, row_to_add_fc)
       pval_results_fcst <- rbind(pval_results_fcst, row_to_add_fcst)
       
-      hpo_plots_fc[[j]] <- plot.fc
-      hpo_plots_high_fc[[j]] <- plot.high.fc
-      hpo_plots_low_fc[[j]] <- plot.low.fc
-      hpo_plots_fcst[[j]] <- plot.fcst
-      hpo_plots_high_fcst[[j]] <- plot.high.fcst
-      hpo_plots_low_fcst[[j]] <- plot.low.fcst
+      # hpo_plots_fc[[j]] <- plot.fc
+      # hpo_plots_high_fc[[j]] <- plot.high.fc
+      # hpo_plots_low_fc[[j]] <- plot.low.fc
+      # hpo_plots_fcst[[j]] <- plot.fcst
+      # hpo_plots_high_fcst[[j]] <- plot.high.fcst
+      # hpo_plots_low_fcst[[j]] <- plot.low.fcst
       
     }
   
@@ -311,78 +313,78 @@ for (i in seq_along(tis)){
     #### Saving plots
     
     
-    pdf(paste0('fc/', tissue, "/", hpo_code_plain, '/wil_fc_plots_extreme_', tissue, '_', hpo_code_plain, '.pdf'))
-    
-    for (j in 1:length(hpo_plots_fc)){
-      print(hpo_plots_fc[[j]])
-    }
-    
-    invisible(dev.off())
-    
-    message(paste0("Plots for fc extreme values saved in ", paste0('fc/', tissue, "/", hpo_code_plain, '/wil_fc_plots_extreme_', tissue, '_', hpo_code_plain, '.pdf')))
-    
+    # pdf(paste0('fc/', tissue, "/", hpo_code_plain, '/wil_fc_plots_extreme_', tissue, '_', hpo_code_plain, '.pdf'))
+    # 
+    # for (j in 1:length(hpo_plots_fc)){
+    #   print(hpo_plots_fc[[j]])
+    # }
+    # 
+    # invisible(dev.off())
+    # 
+    # message(paste0("Plots for fc extreme values saved in ", paste0('fc/', tissue, "/", hpo_code_plain, '/wil_fc_plots_extreme_', tissue, '_', hpo_code_plain, '.pdf')))
+    # 
     ##### High values
     
-    pdf(paste0('fc/', tissue, "/", hpo_code_plain, '/wil_fc_plots_high_', tissue, '_', hpo_code_plain, '.pdf'))
-    
-    for (j in 1:length(hpo_plots_high_fc)){
-      print(hpo_plots_high_fc[[j]])
-    }
-    
-    invisible(dev.off())
-    
-    message(paste0("Plots for fc high values saved in ", paste0('fc/', tissue, "/", hpo_code_plain, '/wil_fc_plots_high_', tissue, '_', hpo_code_plain, '.pdf')))
-    
+    # pdf(paste0('fc/', tissue, "/", hpo_code_plain, '/wil_fc_plots_high_', tissue, '_', hpo_code_plain, '.pdf'))
+    # 
+    # for (j in 1:length(hpo_plots_high_fc)){
+    #   print(hpo_plots_high_fc[[j]])
+    # }
+    # 
+    # invisible(dev.off())
+    # 
+    # message(paste0("Plots for fc high values saved in ", paste0('fc/', tissue, "/", hpo_code_plain, '/wil_fc_plots_high_', tissue, '_', hpo_code_plain, '.pdf')))
+    # 
     ##### Low values
     
-    pdf(paste0('fc/', tissue, "/", hpo_code_plain, '/wil_fc_plots_low_', tissue, '_', hpo_code_plain, '.pdf'))
-    
-    for (j in 1:length(hpo_plots_low_fc)){
-      print(hpo_plots_low_fc[[j]])
-    }
-    
-    invisible(dev.off())
-    
-    message(paste0("Plots for fc low values saved in ", paste0('fc/', tissue, "/", hpo_code_plain, '/wil_fc_plots_low_', tissue, '_', hpo_code_plain, '.pdf')))
-    
+    # pdf(paste0('fc/', tissue, "/", hpo_code_plain, '/wil_fc_plots_low_', tissue, '_', hpo_code_plain, '.pdf'))
+    # 
+    # for (j in 1:length(hpo_plots_low_fc)){
+    #   print(hpo_plots_low_fc[[j]])
+    # }
+    # 
+    # invisible(dev.off())
+    # 
+    # message(paste0("Plots for fc low values saved in ", paste0('fc/', tissue, "/", hpo_code_plain, '/wil_fc_plots_low_', tissue, '_', hpo_code_plain, '.pdf')))
+    # 
     
     #### fcst ####
     
     
-    pdf(paste0('fcst/', tissue, "/", hpo_code_plain, '/wil_fcst_plots_extreme_', tissue, '_', hpo_code_plain, '.pdf'))
-    
-    for (j in 1:length(hpo_plots_fcst)){
-      print(hpo_plots_fcst[[j]])
-    }
-    
-    invisible(dev.off())
-    
-    message(paste0("Plots for fcst extreme values saved in ", paste0('fcst/', tissue, "/", hpo_code_plain, '/wil_fcst_plots_extreme_', tissue, '_', hpo_code_plain, '.pdf')))
-    
+    # pdf(paste0('fcst/', tissue, "/", hpo_code_plain, '/wil_fcst_plots_extreme_', tissue, '_', hpo_code_plain, '.pdf'))
+    # 
+    # for (j in 1:length(hpo_plots_fcst)){
+    #   print(hpo_plots_fcst[[j]])
+    # }
+    # 
+    # invisible(dev.off())
+    # 
+    # message(paste0("Plots for fcst extreme values saved in ", paste0('fcst/', tissue, "/", hpo_code_plain, '/wil_fcst_plots_extreme_', tissue, '_', hpo_code_plain, '.pdf')))
+    # 
     ##### High values
     
-    pdf(paste0('fcst/', tissue, "/", hpo_code_plain, '/wil_fcst_plots_high_', tissue, '_', hpo_code_plain, '.pdf'))
-    
-    for (j in 1:length(hpo_plots_high_fcst)){
-      print(hpo_plots_high_fcst[[j]])
-    }
-    
-    invisible(dev.off())
-    
-    message(paste0("Plots for fcst high values saved in ", paste0('fcst/', tissue, "/", hpo_code_plain, '/wil_fcst_plots_high_', tissue, '_', hpo_code_plain, '.pdf')))
-    
+    # pdf(paste0('fcst/', tissue, "/", hpo_code_plain, '/wil_fcst_plots_high_', tissue, '_', hpo_code_plain, '.pdf'))
+    # 
+    # for (j in 1:length(hpo_plots_high_fcst)){
+    #   print(hpo_plots_high_fcst[[j]])
+    # }
+    # 
+    # invisible(dev.off())
+    # 
+    # message(paste0("Plots for fcst high values saved in ", paste0('fcst/', tissue, "/", hpo_code_plain, '/wil_fcst_plots_high_', tissue, '_', hpo_code_plain, '.pdf')))
+    # 
     ##### Low values
     
-    pdf(paste0('fcst/', tissue, "/", hpo_code_plain, '/wil_fcst_plots_low_', tissue, '_', hpo_code_plain, '.pdf'))
-    
-    for (j in 1:length(hpo_plots_low_fcst)){
-      print(hpo_plots_low_fcst[[j]])
-    }
-    
-    invisible(dev.off())
-    
-    message(paste0("Plots for fcst low values saved in ", paste0('fcst/', tissue, "/", hpo_code_plain, '/wil_fcst_plots_low_', tissue, '_', hpo_code_plain, '.pdf')))
-    
+    # pdf(paste0('fcst/', tissue, "/", hpo_code_plain, '/wil_fcst_plots_low_', tissue, '_', hpo_code_plain, '.pdf'))
+    # 
+    # for (j in 1:length(hpo_plots_low_fcst)){
+    #   print(hpo_plots_low_fcst[[j]])
+    # }
+    # 
+    # invisible(dev.off())
+    # 
+    # message(paste0("Plots for fcst low values saved in ", paste0('fcst/', tissue, "/", hpo_code_plain, '/wil_fcst_plots_low_', tissue, '_', hpo_code_plain, '.pdf')))
+    # 
   
   }
 }
