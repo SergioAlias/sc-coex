@@ -1,7 +1,7 @@
 #!/usr/bin/env Rscript
 
 # Sergio Alías, 20230416
-# Last modified 20230424
+# Last modified 20230427
 
 # Script for getting metrics that explains confusion table results
 # We need:
@@ -52,8 +52,7 @@ results <- data.table(tissue = character(),
                       # Prev = numeric(),
                       # ACC = numeric(),
                       F1 = numeric(),
-                      MCC = numeric(),
-                      test = numeric()
+                      MCC = numeric()
                       )#,
                       # FM = numeric(),
                       # BM = numeric(),
@@ -62,10 +61,10 @@ results <- data.table(tissue = character(),
 
 for (i in c(1:nrow(table))){
   tissue <- table[i, tissue]
-  TP <- table[i, TP]
-  TN <- table[i, TN]
-  FP <- table[i, FP]
-  FN <- table[i, FN]
+  TP <- as.numeric(table[i, TP])
+  TN <- as.numeric(table[i, TN])
+  FP <- as.numeric(table[i, FP])
+  FN <- as.numeric(table[i, FN])
   row.add <- data.table(tissue = tissue,
                         TP = TP,
                         TN = TN,
@@ -86,8 +85,7 @@ for (i in c(1:nrow(table))){
                         # Prev = (TP+FN)/(TP+TN+FP+FN),
                         # ACC = (TP+TN)/(TP+TN+FP+FN),
                         F1 = (2*TP)/((2*TP)+FP+FN),
-                        MCC = ((TP*TN-FP*FN)/sqrt((TP+FP)*(TP+FN)*(TN+FP)*(TN+FN))),
-                        test = 0
+                        MCC = ((TP*TN-FP*FN)/sqrt((TP+FP)*(TP+FN)*(TN+FP)*(TN+FN)))
                         )#,
                         # FM = sqrt((TP/(TP+FP))*(TP/(TP+FN))),
                         # BM = (TP/(TP+FN))+(TN/(TN+FP))-1,

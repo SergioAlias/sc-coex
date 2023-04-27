@@ -1,24 +1,26 @@
 #!/usr/bin/env Rscript
 
 # Sergio Alías, 20230426
-# Last modified 20230426
+# Last modified 20230427
 
 # Script for getting confusion matrices that explain coex / fc / fcst results
 
 ### Packages
 
 library(data.table)
+library(dplyr)
 
 ### Input specs
 
 urales_home <- "/run/user/1000/gvfs/sftp:host=urales/home/salias"
 urales_home <- "/run/user/1013/gvfs/sftp:host=urales,user=salias/home/salias"
 
-metric <- "fc" # coex, fc, fcst
+metric <- "coex" # coex, fc, fcst
 pval_thr <- 0.001
 
 if (metric == "coex"){
 tissues <- c("blood", "liver", "lung", "pancreas", "spleen", "stomach", "testis")
+tissues <- c("blood", "spleen", "stomach", "testis")
 } else {
   tissues <- c("adipose-tissue",
              "blood",
@@ -125,6 +127,10 @@ for (i in seq_along(tissues)){
   for (pval_col in c("wilcoxon.pval", "high_wil_pval", "low_wil_pval")){
   
   ks_values <- dcast(results, tissue ~ hpo, value.var = pval_col)
+  ks_values[, c("text", "num") := tstrsplit(tissue, "(?<=\\D)(?=\\d)", perl = TRUE)] # para asegurarnos de que están bien ordenadas las filas 
+  ks_values[, num := as.numeric(num)]
+  ks_values <- ks_values[order(num)]
+  ks_values[, c("text", "num") := NULL]
   rownames(ks_values) <- ks_values$tissue
   ks_values$tissue <- annotations$V3
   
@@ -136,7 +142,11 @@ for (i in seq_along(tissues)){
   
   for (r in seq_along(rownames(coment_values))){
     for (c in 2:ncol(coment_values)){
-      possible_row <- HPO.comentions[ACT.name == coment_values$tissue[r] & HPO.id == colnames(coment_values)[c],]
+      if (metric == "coex"){
+        possible_row <- HPO.comentions[ACT.name == coment_values$tissue[r] & HPO.id == gsub("HP", "HP:", colnames(coment_values)[c]),]
+      } else {
+        possible_row <- HPO.comentions[ACT.name == coment_values$tissue[r] & HPO.id == colnames(coment_values)[c],]
+      }
       if (nrow(possible_row) != 0){
         coment_values[r, c] <- possible_row$coment.pval
       }
@@ -218,6 +228,28 @@ for (i in seq_along(tissues)){
   }
 
   }
+}
+
+if (metric != "coex"){
+  sums <- colSums(truth_tables)
+  truth_tables <- rbind(truth_tables, sums)
+  sums <- colSums(truth_tables_filt)
+  truth_tables_filt <- rbind(truth_tables_filt, sums)
+  sums <- colSums(truth_tables_high)
+  truth_tables_high <- rbind(truth_tables_high, sums)
+  sums <- colSums(truth_tables_high_filt)
+  truth_tables_high_filt <- rbind(truth_tables_high_filt, sums)
+  sums <- colSums(truth_tables_low)
+  truth_tables_low <- rbind(truth_tables_low, sums)
+  sums <- colSums(truth_tables_low_filt)
+  truth_tables_low_filt <- rbind(truth_tables_low_filt, sums)
+  
+  rownames(truth_tables)[nrow(truth_tables)] <- "all"
+  rownames(truth_tables_filt)[nrow(truth_tables_filt)] <- "all"
+  rownames(truth_tables_high)[nrow(truth_tables_high)] <- "all"
+  rownames(truth_tables_high_filt)[nrow(truth_tables_high_filt)] <- "all"
+  rownames(truth_tables_low)[nrow(truth_tables_low)] <- "all"
+  rownames(truth_tables_low_filt)[nrow(truth_tables_low_filt)] <- "all"
 }
 
 
