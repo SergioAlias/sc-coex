@@ -1,11 +1,11 @@
 # Sergio Alías, 20220614
-# Last modified 20230426
+# Last modified 20230428
 
 # plot_coex.R
 
-# Wilcoxon test, p-values and plots of HPO-related genes in a tissue
+# Kolmogórov-Smirnov tests and p-valuesof HPO-related genes in a tissue
 
-# Call it from the bash for multiple HPO/tissue analysis (or use workflow_coex.sh directly)
+# Call it from the bash for multiple HPO/tissue analysis, or use workflow_coex.sh directly (recommended)
 
 
 suppressMessages(library(ggplot2))
