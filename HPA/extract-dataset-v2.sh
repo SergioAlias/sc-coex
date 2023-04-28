@@ -1,6 +1,6 @@
 #!/bin/bash
 # Sergio Alías, 20220426
-# Last modified 20220426
+# Last modified 20230428
 
 # Script para extraer los clsters de un tejido del dataset de HPA
 
@@ -21,8 +21,8 @@ TISSLINES=$(cat rna_single_cell_read_count.tsv | grep "$TISSUE")
 
 for ((i=0;i<=LCLUST;i++)); do
     echo "Filtering cluster $i..."
-    head -1 rna_single_cell_read_count.tsv > ./datasets/$TISSFN/$TISSFN-$i-dataset.tsv
-    echo $TISSLINES | grep -P "$TISSUE\t[0-9]+\t$i\t" >> ./datasets/$TISSFN/$TISSFN-$i-dataset.tsv
+    head -1 rna_single_cell_read_count.tsv > ./HPA/datasets/$TISSFN/$TISSFN-$i-dataset.tsv
+    echo $TISSLINES | grep -P "$TISSUE\t[0-9]+\t$i\t" >> ./HPA/datasets/$TISSFN/$TISSFN-$i-dataset.tsv
 done
 
 echo "Finished! :)"
