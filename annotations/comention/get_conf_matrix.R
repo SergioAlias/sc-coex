@@ -13,14 +13,13 @@ library(dplyr)
 ### Input specs
 
 urales_home <- "/run/user/1000/gvfs/sftp:host=urales/home/salias"
-urales_home <- "/run/user/1013/gvfs/sftp:host=urales,user=salias/home/salias"
+#urales_home <- "/run/user/1013/gvfs/sftp:host=urales,user=salias/home/salias"
 
-metric <- "coex" # coex, fc, fcst
-pval_thr <- 0.001
+metric <- "fcst" # coex, fc, fcst
+pval_thr <- 0.001 # 0.001
 
 if (metric == "coex"){
 tissues <- c("blood", "liver", "lung", "pancreas", "spleen", "stomach", "testis")
-tissues <- c("blood", "spleen", "stomach", "testis")
 } else {
   tissues <- c("adipose-tissue",
              "blood",
@@ -256,7 +255,7 @@ if (metric != "coex"){
 
 write.table(truth_tables,
             file = file.path(urales_home,
-                             "TFM/results_w_comention/",
+                             "TFM/results_w_comention",
                              paste0(metric,
                                     "_extreme_confusion_table.tsv")),
             sep = "\t",
@@ -266,7 +265,7 @@ write.table(truth_tables,
 
 write.table(truth_tables_filt,
             file = file.path(urales_home,
-                             "TFM/results_w_comention/",
+                             "TFM/results_w_comention",
                              paste0(metric,
                                     "_extreme_confusion_table_filtered.tsv")),
             sep = "\t",
@@ -277,7 +276,7 @@ write.table(truth_tables_filt,
 
 write.table(truth_tables_high,
             file = file.path(urales_home,
-                             "TFM/results_w_comention/",
+                             "TFM/results_w_comention",
                              paste0(metric,
                                     "_high_confusion_table.tsv")),
             sep = "\t",
@@ -287,7 +286,7 @@ write.table(truth_tables_high,
 
 write.table(truth_tables_high_filt,
             file = file.path(urales_home,
-                             "TFM/results_w_comention/",
+                             "TFM/results_w_comention",
                              paste0(metric,
                                     "_high_confusion_table_filtered.tsv")),
             sep = "\t",
@@ -298,7 +297,7 @@ write.table(truth_tables_high_filt,
 
 write.table(truth_tables_low,
             file = file.path(urales_home,
-                             "TFM/results_w_comention/",
+                             "TFM/results_w_comention",
                              paste0(metric,
                                     "_low_confusion_table.tsv")),
             sep = "\t",
@@ -308,7 +307,7 @@ write.table(truth_tables_low,
 
 write.table(truth_tables_low_filt,
             file = file.path(urales_home,
-                             "TFM/results_w_comention/",
+                             "TFM/results_w_comention",
                              paste0(metric,
                                     "_low_confusion_table_filtered.tsv")),
             sep = "\t",

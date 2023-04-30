@@ -17,39 +17,34 @@ library(data.table)
 ### Input files setup
 
 tissues <- c("blood", "liver", "lung", "pancreas", "spleen", "stomach", "testis")
-tissues <- c("adipose-tissue",
-             "blood",
-             "brain",
-             "breast",
-             "bronchus",
-             "colon",
-             "endometrium",
-             "esophagus",
-             "eye",
-             "heart",
-             "kidney",
-             "liver",
-             "lung",
-             "lymph-node",
-             "ovary",
-             "pancreas",
-             #"placenta",
-             "prostate-gland",
-             #"rectum",
-             "skeletal-muscle-organ",
-             "skin-of-body",
-             "small-intestine",
-             "spleen",
-             "stomach",
-             "testis")
+# tissues <- c("adipose-tissue",
+#              "blood",
+#              "brain",
+#              "breast",
+#              "bronchus",
+#              "colon",
+#              "endometrium",
+#              "esophagus",
+#              "eye",
+#              "heart",
+#              "kidney",
+#              "liver",
+#              "lung",
+#              "lymph-node",
+#              "ovary",
+#              "pancreas",
+#              #"placenta",
+#              "prostate-gland",
+#              #"rectum",
+#              "skeletal-muscle-organ",
+#              "skin-of-body",
+#              "small-intestine",
+#              "spleen",
+#              "stomach",
+#              "testis")
 dataset <- "HPA"
 urales_home <- "/run/user/1000/gvfs/sftp:host=urales/home/salias"
-urales_home <- "/run/user/1013/gvfs/sftp:host=urales,user=salias/home/salias"
-
-
-
-truth_tables_filt <- data.frame(TP = numeric(), TN = numeric(), FP = numeric(), FN = numeric()) # solo la primera vez
-truth_tables <- data.frame(TP = numeric(), TN = numeric(), FP = numeric(), FN = numeric())
+# urales_home <- "/run/user/1013/gvfs/sftp:host=urales,user=salias/home/salias"
 
 
 for (t in seq_along(tissues)){
@@ -66,9 +61,9 @@ if (!file.exists(file.path(urales_home,
 
 
 results <- fread(file.path(urales_home,
-                           "TFM/fold_change/fcst",
+                           "TFM/coex-analysis/HPA",
                            tissue,
-                           paste0("wil_results_fcst_",
+                           paste0("wil_results_HPA_",
                                   tissue,
                                   #"_corrected.tsv"))
                                   ".tsv"))
@@ -89,7 +84,7 @@ annotations <- fread(file.path(urales_home,
 
 
 comentions <- fread(file.path(urales_home,
-                              "TFM/annotations/comention/ALL_ACT-HPO_add_s.tsv"))
+                              "TFM/annotations/comention/ALL_ACT-HPO_0.05_add_s.tsv"))
 
 colnames(comentions) <- c("ACT.id",
                           "ACT.name",
@@ -117,8 +112,8 @@ for (string in strings) {
 
 ### Filtering comention file by HPO terms
 
-# HPO.comentions <- comentions[HPO.id %in% unique(gsub("HP", "HP:", results$hpo))] # coex
-HPO.comentions <- comentions[HPO.id %in% unique(results$hpo)] # fc, fcst
+HPO.comentions <- comentions[HPO.id %in% unique(gsub("HP", "HP:", results$hpo))] # coex
+# HPO.comentions <- comentions[HPO.id %in% unique(results$hpo)] # fc, fcst
 
 rm(comentions)
 
@@ -133,8 +128,8 @@ for (i in 1:nrow(results)){
   message("Row ", i, "/", nrow(results), " ", t, "...")
   has.comention <- FALSE
   for (j in 1:nrow(HPO.comentions)){
-    # if (gsub("HP", "HP:", results[i, hpo]) == HPO.comentions[j, HPO.id]){ # coex
-    if (results[i, hpo] == HPO.comentions[j, HPO.id]){ # fc, fcst
+    if (gsub("HP", "HP:", results[i, hpo]) == HPO.comentions[j, HPO.id]){ # coex
+    # if (results[i, hpo] == HPO.comentions[j, HPO.id]){ # fc, fcst
       if (results[i, annotation] == HPO.comentions[j, ACT.name]){
         row.to.add <- cbind(results[i], HPO.comentions[j, list(str.sim, comentions, ratio, coment.pval)])
         sign.results <- rbind(sign.results, row.to.add)
@@ -158,7 +153,7 @@ fwrite(sign.results, file = paste0(file.path(urales_home,
                                              paste0(tissue,
                                                     "_",
                                                     dataset,
-                                                    "_fcst_results_w_comention.tsv"))),
+                                                    "_05pval_coex_results_w_comention.tsv"))),
        sep = "\t")
 
 
