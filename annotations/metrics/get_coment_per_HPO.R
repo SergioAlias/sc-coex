@@ -114,3 +114,9 @@ for (t in seq_along(tissues)){
                                        intersect.05pval = inter.05pval))
   }
 }  
+
+
+fwrite(results,
+       file.path(urales_home,
+                 "TFM/results_w_comention/coment_per_HPO.tsv"),
+       sep = "\t")
