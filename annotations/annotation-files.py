@@ -1,5 +1,5 @@
 # Sergio Alías, 20220602
-# Last modified 20220624
+# Last modified 20230503
 
 # Script para generar dos ficheros de la forma:
 
@@ -16,7 +16,7 @@ import networkx
 # from datetime import datetime
 
 
-dataset = "TabulaSapiens"
+dataset = "HPA"
 
 
 ## Carga de datos
@@ -123,11 +123,12 @@ file_1 = {t: [] for t in t_subt}
 ## Para el segundo creamos unas lista auxiliar, ya que luego nos interesa eliminar duplicados
 ## y así podemos llevar la cuenta de qué términos HPO7 genes han sido añadidos ya
 
-file_2_hpo = []
+
 
 ## Rellenamos file_1 y construimos el fichero 2
 
 for t in t_subt: # Iteramos por tejido
+    file_2_hpo = [] # La lista de HPO se vacía al cambiar de tejido
     for ub in t_subt[t]: # Iteramos por término UBERON
         ub = ub.replace(':', '_')
         if ub in uberon_hpo.keys(): # Comprobamos que exista alguna relación UBERON-HPO
