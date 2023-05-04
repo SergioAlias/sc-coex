@@ -1,7 +1,7 @@
 #!/usr/bin/env Rscript
 
 # Sergio Alías, 20230428
-# Last modified 20230428
+# Last modified 20230504
 
 # plot_ks.R
 
@@ -111,11 +111,11 @@ plot <- plot +
   if (metric == "fc"){
     hpo_genes <- FC[Gene %in% genes]$log2FC
     back_genes <- FC[!(Gene %in% genes)]$log2FC # los background
-    x_axis_title <- "FC"
+    x_axis_title <- "logFC"
   } else if (metric == "fcst"){
     hpo_genes <- FC[Gene %in% genes]$log2FC_single_tissue 
     back_genes <- FC[!(Gene %in% genes)]$log2FC_single_tissue # otra vez los background pero de fcst
-    x_axis_title <- "FC-st"
+    x_axis_title <- "logFC-st"
   }
 
   df <- data.frame(Subset = rep('HPO-related genes', length(hpo_genes)), FC = hpo_genes)
