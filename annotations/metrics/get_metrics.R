@@ -1,7 +1,7 @@
 #!/usr/bin/env Rscript
 
 # Sergio Alías, 20230416
-# Last modified 20230427
+# Last modified 20230507
 
 # Script for getting metrics that explains confusion table results
 # We need:
@@ -95,9 +95,36 @@ for (i in c(1:nrow(table))){
   
 }
 
+results$tissue <- c("Adipose tissue",
+                    "Blood",
+                    "Brain",
+                    "Breast",
+                    "Bronchus",
+                    "Colon",
+                    "Endometrium",
+                    "Esophagus",
+                    "Eye",
+                    "Heart",
+                    "Kidney",
+                    "Liver",
+                    "Lung",
+                    "Lymph node",
+                    "Ovary",
+                    "Pancreas",
+                    "Prostate gland",
+                    "Skeletal muscle",
+                    "Skin",
+                    "Small intestine",
+                    "Spleen",
+                    "Stomach",
+                    "Testis",
+                    "Todos")
+
+colnames(results)[1] <- "Tejido"
 
 fwrite(results,
        file = gsub("confusion_table", "metrics", filename_full),
-       sep = "\t")
+       sep = "\t",
+       dec = ",")
 
 }

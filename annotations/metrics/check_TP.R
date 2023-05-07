@@ -19,7 +19,7 @@ library(data.table)
 urales_home <- "/run/user/1000/gvfs/sftp:host=urales/home/salias"
 #urales_home <- "/run/user/1013/gvfs/sftp:host=urales,user=salias/home/salias"
 
-tissues <- c("blood", "liver", "lung", "pancreas", "spleen", "stomach", "testis")
+tissues <- c("blood", "liver", "lung", "pancreas", "spleen", "stomach", "testis", "skin")
 
 results <- data.table(tissue = character(),
                       TP_high = numeric(),
