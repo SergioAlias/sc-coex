@@ -70,9 +70,9 @@ for (i in c(1:nrow(table))){
                         TN = TN,
                         FP = FP,
                         FN = FN,
-                        TPR = TP/(TP+FN),
-                        TNR = TN/(TN+FP),
-                        PPV = TP/(TP+FP),
+                        TPR = signif(TP/(TP+FN), 4),
+                        TNR = signif(TN/(TN+FP), 4),
+                        PPV = signif(TP/(TP+FP), 4),
                         # NPV = TN/(TN+FN),
                         # FNR = FN/(FN+TP),
                         # FPR = FP/(FP+TN),
@@ -84,8 +84,8 @@ for (i in c(1:nrow(table))){
                         # CSI = TP/(TP+FN+FP),
                         # Prev = (TP+FN)/(TP+TN+FP+FN),
                         # ACC = (TP+TN)/(TP+TN+FP+FN),
-                        F1 = (2*TP)/((2*TP)+FP+FN),
-                        MCC = ((TP*TN-FP*FN)/sqrt((TP+FP)*(TP+FN)*(TN+FP)*(TN+FN)))
+                        F1 = signif((2*TP)/((2*TP)+FP+FN), 4),
+                        MCC = signif(((TP*TN-FP*FN)/sqrt((TP+FP)*(TP+FN)*(TN+FP)*(TN+FN))), 4)
                         )#,
                         # FM = sqrt((TP/(TP+FP))*(TP/(TP+FN))),
                         # BM = (TP/(TP+FN))+(TN/(TN+FP))-1,
@@ -95,7 +95,17 @@ for (i in c(1:nrow(table))){
   
 }
 
-results$tissue <- c("Adipose tissue",
+if (grepl("coex", filename)){
+  results$tissue <- c("Blood",
+                      "Liver",
+                      "Lung",
+                      "Pancreas",
+                      "Spleen",
+                      "Stomach",
+                      "Testis",
+                      "Skin")
+} else {
+  results$tissue <- c("Adipose tissue",
                     "Blood",
                     "Brain",
                     "Breast",
@@ -119,6 +129,7 @@ results$tissue <- c("Adipose tissue",
                     "Stomach",
                     "Testis",
                     "Todos")
+}
 
 colnames(results)[1] <- "Tejido"
 
