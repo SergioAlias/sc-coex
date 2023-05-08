@@ -1,7 +1,7 @@
 #!/usr/bin/env Rscript
 
 # Sergio Alías, 20230430
-# Last modified 20230430
+# Last modified 20230508
 
 # Script for getting number of cell-types comentioned per HPO per tissue
 # We need:
@@ -83,7 +83,9 @@ results <- data.table(tissue = character(),
                       total = numeric(),
                       intersect = numeric(),
                       total.05pval = numeric(),
-                      intersect.05pval = numeric()
+                      intersect.05pval = numeric(),
+                      percent = numeric(),
+                      percent.05pval = numeric()
                       )
 
 for (t in seq_along(tissues)){
@@ -111,7 +113,9 @@ for (t in seq_along(tissues)){
                                        total = cm.total,
                                        intersect = inter,
                                        total.05pval = cm.total.05pval,
-                                       intersect.05pval = inter.05pval))
+                                       intersect.05pval = inter.05pval,
+                                       percent = inter / length(tis_celltypes),
+                                       percent.05pval = inter.05pval / length(tis_celltypes)))
   }
 }  
 
