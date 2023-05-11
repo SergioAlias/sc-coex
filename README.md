@@ -12,10 +12,6 @@ The following list is exahustive and covers every script on the repo. Feel free 
 
 ---
 
-##### `HPA/`
-
----
-
 - `HPA/extract-dataset.sh`: Bash script for dividing the HPA dataset according to the tissues. It is used from the command line as follows:
 
 ```bash
@@ -55,3 +51,19 @@ python3 annotation-files.py
 It takes Uberon child terms, Uberon-HPO relationships, HPO-genes relationships and the HPO OBO file (for HPO children terms) and generates two TSV files: the first one has the structure tissue **`\t`** HPO code **\t** HPO name **\t** num genes; and the second one has the structure HPO code **\t** gene code **\t** gene name.
 
 ---
+
+- `annotations/specific-annotation-file.py`: Python script for filtering the first output file of `annotation-files.py` to keep only HPO terms with 20 or more associated genes that do not have any children term with 20 or more associated genes. It is used from the command line as follows:
+
+```bash
+python3 specific-annotation-file.py
+```
+
+It takes output file 1 from `annotation-files.py` and the HPO OBO file, and generates a filtered TSV file with the same format.
+
+---
+
+- `annotations/HPO/ENSEMBL-to-Entrez-id.py`: Python script for obtaining Entrez ID- Ensembl ID relationships for HPA genes. It is used from the comand line as follows:
+
+```bash
+python3 ENSEMBL-to-Entrez-id.py
+```

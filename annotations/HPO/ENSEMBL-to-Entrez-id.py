@@ -7,7 +7,7 @@ import json
 # from datetime import datetime
 
 
-dataset = "TabulaSapiens"
+dataset = "HPA"
 
 ## Cargamos los IDs de Ensembl de HPA y las relaciones Ensembl-Entrez de BioMart
 
