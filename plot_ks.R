@@ -17,12 +17,12 @@ library(ggplot2)
 # Main script
 
 dataset <- "HPA" # dataset name
-metric <- "fcst" # coex, fc or fcst
+metric <- "coex" # coex, fc or fcst
 test <- "high" # extreme, high, low
-hpo_term <- "HP:0001629" # hpo code ("HP" for coex, "HP:" for fc / fcst)
+hpo_term <- "HP0001082" # hpo code ("HP" for coex, "HP:" for fc / fcst)
 hpo_code_plain <- hpo_term
-tissue <- "heart" # tissue
-cluster <- "0" # cluster
+tissue <- "liver" # tissue
+cluster <- "9" # cluster
 tissue_clus <- paste0(tissue, "-", cluster)
 
 ann_file <- paste0('annotations/cluster-annotation/', dataset, '/', tissue, '-cluster-annotation')
