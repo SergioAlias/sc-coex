@@ -1,3 +1,0 @@
-cat rna_single_cell_type_tissue.tsv | grep breast | cut -f 3-5 | head -26 > annotations/cluster-annotation/HPA/breast-cluster-annotation
-
-# Cambiar el tissue y el número máximo de clusters del tissue
