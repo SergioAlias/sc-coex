@@ -1,6 +1,6 @@
 # sc-net-analysis
 
-Code used for my Bioinformatics and Computational Biology MSc thesis: Inferencia de redes moleculares y caracterización de relaciones genotipo-fenotipo a partir de datos de single-cell RNA-seq. You can ask me for a copy: sergioaliaseg[at]gmail[dot]com (please note that the document is written in Spanish).
+Code used for my Bioinformatics and Computational Biology MSc Thesis: Inferencia de redes moleculares y caracterización de relaciones genotipo-fenotipo a partir de datos de single-cell RNA-seq. You can ask me for a copy: sergioaliaseg[at]gmail[dot]com (please note that the document is written in Spanish).
 
 ### Abstract
 
@@ -9,6 +9,10 @@ Clinical signs are useful for describing the spectrum of human pathologies. Inte
 ### Scripts
 
 The following list is exahustive and covers every script on the repo. Feel free to `ctrl+F` to the specific scripts you are interested in.
+
+---
+
+##### `HPA/`
 
 ---
 
@@ -48,6 +52,6 @@ Being `tissue` the tissue name (e.g. liver) and last-cluster the number of the l
 python3 annotation-files.py
 ```
 
-It takes Uberon child terms, Uberon-HPO relationships, HPO-genes relationships and the HPO OBO file (for HPO children terms) and generates two TSV files: the first one has the structure tissue **`\t`** HPO code **`\t`** HPO name **`\t`** num genes; and the second one has the structure HPO code **`\t`** gene code **`\t`** gene name.
+It takes Uberon child terms, Uberon-HPO relationships, HPO-genes relationships and the HPO OBO file (for HPO children terms) and generates two TSV files: the first one has the structure tissue **`\t`** HPO code **\t** HPO name **\t** num genes; and the second one has the structure HPO code **\t** gene code **\t** gene name.
 
 ---
