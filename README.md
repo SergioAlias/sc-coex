@@ -8,7 +8,11 @@ Clinical signs are useful for describing the spectrum of human pathologies. Inte
 
 ### Scripts
 
-`HPA/extract-dataset.sh`: Bash script for dividing the HPA dataset according to the tissues. It is used from the command line as follows:
+The following list is exahustive and covers every script on the repo. Feel free to `ctrl+F` to the specific scripts you are interested in.
+
+---
+
+- `HPA/extract-dataset.sh`: Bash script for dividing the HPA dataset according to the tissues. It is used from the command line as follows:
 
 ```bash
 ./extract-dataset.sh tissue last-cluster
@@ -18,12 +22,32 @@ Being `tissue` the tissue name (e.g. liver) and last-cluster the number of the l
 
 ---
 
-`HPA/results/COTAN-cluster-script.R`: R script for performing the Gene Pair Analysis step of COTAN. It is used inside `run_cluster_script.sh` as follows:
+- `HPA/results/COTAN-cluster-script.R`: R script for performing the Gene Pair Analysis step of COTAN. It is used inside `run_cluster_script.sh` as follows:
 
 ```bash
 Rscript COTAN-cluster-script.R tissue-cluster
 ```
 
 Being tissue-cluster the combination of the tissue name and the cluster name (e.g. liver-0). It reads the RDS file with the `scCOTAN` object already preprocessed and outputs another RDS file with the co-expression matrix.
+
+---
+
+- `HPA/results/run_cluster_script.sh`: Bash script for running `COTAN-cluster-script.R` for each cluster of a given tissue. It is used from the command line as follows:
+
+```bash
+./run_cluster_script.sh tissue last-cluster
+```
+
+Being `tissue` the tissue name (e.g. liver) and last-cluster the number of the las cluster of the tissue (17). The output is an RDS file with a co-expression matrix for each loop iteration.
+
+---
+
+- `annotations/annotation-files.py`: Python script for integrating all the annotations generated in the MSc Thesis. It is used form the command line as follows:
+
+```bash
+python3 annotation-files.py
+```
+
+It takes Uberon child terms, Uberon-HPO relationships, HPO-genes relationships and the HPO OBO file (for HPO children terms) and generates two TSV files: the first one has the structure tissue **`\t`** HPO code **`\t`** HPO name **`\t`** num genes; and the second one has the structure HPO code **`\t`** gene code **`\t`** gene name.
 
 ---
