@@ -8,14 +8,22 @@ Clinical signs are useful for describing the spectrum of human pathologies. Inte
 
 ### Scripts
 
-`HPA/extract-dataset.sh`: Script for dividing the HPA dataset according to the tissues. It is used from the command line as follows:
+`HPA/extract-dataset.sh`: Bash script for dividing the HPA dataset according to the tissues. It is used from the command line as follows:
 
 ```bash
 ./extract-dataset.sh tissue last-cluster
 ```
 
-    Being `tissue` the tissue name and last-cluster the number of the las cluster of the tissue. The output is a TSV file with the HPA dataset for that specific tissue.
+Being `tissue` the tissue name (e.g. liver) and last-cluster the number of the las cluster of the tissue (17). The output is a TSV file with the HPA dataset for that specific tissue.
 
 ---
 
-`HPA/results/COTAN-cluster-script.R`:
+`HPA/results/COTAN-cluster-script.R`: R script for performing the Gene Pair Analysis step of COTAN. It is used inside `run_cluster_script.sh` as follows:
+
+```bash
+Rscript COTAN-cluster-script.R tissue-cluster
+```
+
+Being tissue-cluster the combination of the tissue name and the cluster name (e.g. liver-0). It reads the RDS file with the `scCOTAN` object already preprocessed and outputs another RDS file with the co-expression matrix.
+
+---
