@@ -3,8 +3,7 @@
 # Sergio Alías, 20230419
 # Last modified 20230426
 
-# Script for obtaining gene FC distributions associated to HPOs and making wilcox test against random distributions
-
+# Script for obtaining gene FC distributions associated to HPOs and making K-S tests
 # We need:
 #    - FC results -> computed_FC.tsv
 #    - Tissue-HPO -> TFM/annotations/filtered_tis_hpo_ngenes_HPA.tsv
