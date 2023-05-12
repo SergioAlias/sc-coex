@@ -4,7 +4,7 @@ Code used for my Bioinformatics and Computational Biology MSc Thesis: Inferencia
 
 ### Abstract
 
-Clinical signs are useful for describing the spectrum of human pathologies. Integrating these phenotypes with single-cell RNA-seq data allows the identification of potential relationships between phenotypes and the specific cell types causing them. In this Master's thesis, single-cell transcriptomic data were used to infer these relationships.Differential expression and co-expression of genes associated with abnormal phenotypes were computed as possible measures to identify the cell types associated with a phenotype. The results obtained by these metrics were compared with the set of phenotype-cell type associations described in the literature. The results showed that co-expression, not so much differential expression, emerges as a measure that allows, on the one hand, to identify significant relationships already present in the literature; and on the other hand, to point out cell types potentially associated with abnormal phenotypes that have not yet been extensively described in the literature.
+Clinical signs are useful for describing the spectrum of human pathologies. Integrating these phenotypes with single-cell RNA-seq data allows the identification of potential relationships between phenotypes and the specific cell types causing them. In this Master's thesis, single-cell transcriptomic data were used to infer these relationships. Differential expression and co-expression of genes associated with abnormal phenotypes were computed as possible measures to identify the cell types associated with a phenotype. The results obtained by these metrics were compared with the set of phenotype-cell type associations described in the literature. The results showed that co-expression, not so much differential expression, emerges as a measure that allows, on the one hand, to identify significant relationships already present in the literature; and on the other hand, to point out cell types potentially associated with abnormal phenotypes that have not yet been extensively described in the literature.
 
 ### Scripts
 
@@ -172,7 +172,7 @@ It takes the pooled RNA-seq HPA dataset and it generates a TSV file with the log
 
 ---
 
-- `automatic-COTAN-script.R`: R script for performing the pre-processing step of COTAN. It is called from the command line as follows:
+- `automatic-COTAN-script.R`: R script for performing the pre-processing step of COTAN. It is used from the command line as follows:
 
 ```bash
 Rscript automatic-COTAN-script.R
@@ -182,4 +182,59 @@ Once executed, the script will ask for some input (tissue name, number of the la
 
 ---
 
-- `coex-to-tsv.R`: R script for 
+- `coex-to-tsv.R`: R script for converting RDS files with co-expression matrices to TSV files. It is used inside `workflow_coex.sh` as follows:
+
+```bash
+Rscript coex-to-tsv.R --tissue tissue --n_cluster n_cluster --dataset dataset
+```
+
+Being `tissue` the tissue name (e.g. liver), `n_cluster` the number of clusters (e.g. 17) and `dataset` the dataset name (HPA). It takes an RDS file with a co-expression matrix and it outputs a TSV file containing that matrix.
+
+---
+
+- `plot_coex.R`: R script for performing Kolmogórov-Smirnov tests of HPO-related genes co-expression in a tissue (despite the "plot" in the script name, this script does not plot anything since its name is due to historical reasons). It is used inside `workflow_coex.sh` as follows:
+
+```bash
+Rscript plot_coex.R --tissue tissue --max_cluster max_cluster --hpo hpo --dataset dataset
+```
+
+Being `tissue` the tissue name (e.g. liver), `max_cluster` the number of clusters (e.g. 17), `hpo` the HPO code without the colon (e.g. HP0006561) and `dataset` the dataset name (HPA). It takes a file with the cluster annotation for the tissue, HPO code-HPO name relationships, a list of genes related to the HPO term and the co-expression matrix and the output is a TSV file with the p-values of all K-S tests performed.
+
+---
+
+- `plot_ks.R`: R script for plotting distributions and the corresponding K-S test p-value. It is used from the command line as follows:
+
+```bash
+./plot_ks.R
+```
+We need to change the `metric`, `test`, `hpo_term`, `tissue` and `cluster` variables according to our needs. It takes the cluster annotation file for the tissue, K-S results for the tissue and measure used (differencial expression or COEX), a list of genes related to the HPO term and the co-expression matrix. It generates a PDF file with the plot.
+
+---
+
+- `plot_percent_HPO.R`: R script for plotting the percentage of cell-type-related co-mentions per HPO term. It is used from the command line as follows:
+
+```bash
+./plot_percent_HPO.R
+```
+
+It takes the co-mention file and outputs a PDF file with the plot.
+
+---
+
+- `subset-genes.py`: Python script for retrieving all genes related to an HPO term in a cluster. It is used inside `workflow_coex.sh` as follows:
+
+```bash
+python3 subset-genes.py hpo tissue n_clusters dataset
+```
+
+Being `hpo` the HPO term without the colon (e.g. HP0006561), `tissue` the tissue name (e.g. liver), `n_clusters` the number of clusters (e.g. 17) and `dataset` the dataset name (HPA). It takes the HPO-genes relationships, the Entrez-Ensembl relationships and the TSV file with the co-expression matrix. It generates a text file with all genes associated with the HPO term that are in the cluster.
+
+---
+
+- `workflow_coex.sh`: Bash script for performing some steps of the COEX workflow (from RDS matrices to K-S tests results). It is used from the command line as follows:
+
+```bash
+./workflow_coex.sh tissue
+```
+
+Being `tissue` the tissue name (e.g. liver). There are other optional parameters we normally don't need to use (e.g. argument 2 can be a text file with HPO names, defaults to all; argument 3 can be another dataset, defaults to HPA). The output is the output of scripts `coex-to-tsv.R`, `subset-genes.py` and `plot_coex.R`.
