@@ -11,6 +11,7 @@
 *.tsv
 *.zip
 *.h5ad
+*.obo
 .Rhistory
 scp-commands.sh
 coex-analysis/
