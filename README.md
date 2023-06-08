@@ -148,6 +148,17 @@ It takes the K-S test result files with the co-mention information added. It gen
 
 ---
 
+
+- `annotations/metrics/pseudo_TP.R`: [INCOMPLETE] R script for counting TPs with p-val threshold of 0.05 that are not TP for p-val threshold of 0.001. It is used from the command line as follows:
+
+```bash
+./pseudo_TP.R
+```
+
+It takes the K-S test result files with the co-mention information added. It generates a TSV file with the pseudo TPs.
+
+---
+
 - `fold_change/compute_FC_ks.R`: R script for obtaining gene FC distributions associated to HPOs and making K-S tests. It is used from the command line as follows:
 
 ```bash
