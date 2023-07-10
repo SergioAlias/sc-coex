@@ -1,7 +1,7 @@
 #!/usr/bin/env Rscript
 
 # Sergio Alías, 20230608
-# Last modified 20230608
+# Last modified 20230710
 
 # Script for counting TP for 0,05 p-val threshold but not for 10^-3
 
@@ -20,22 +20,22 @@ urales_home <- "/run/user/1013/gvfs/sftp:host=urales,user=salias/home/salias"
 tissues <- c("blood", "liver", "lung", "pancreas", "spleen", "stomach", "testis", "skin")
 
 results <- data.table(tissue = character(),
-                      TP05_high = numeric(),
+                      TP_high = numeric(),
                       pseudo_TP05_high = numeric(),
                       perc_TP05_high = numeric(),
-                      TP05_low = numeric(),
+                      TP_low = numeric(),
                       pseudo_TP05_low = numeric(),
                       perc_TP05_low = numeric(),
-                      TP05_extreme = numeric(),
+                      TP_extreme = numeric(),
                       pseudo_TP05_extreme = numeric(),
                       perc_TP05_extreme = numeric(),
-                      TPf05_high = numeric(),
+                      TPf_high = numeric(),
                       pseudo_TPf05_high = numeric(),
                       perc_TPf05_high = numeric(),
-                      TPf05_low = numeric(),
+                      TPf_low = numeric(),
                       pseudo_TPf05_low = numeric(),
                       perc_TPf05_low = numeric(),
-                      TPf05_extreme = numeric(),
+                      TPf_extreme = numeric(),
                       pseudo_TPf05_extreme = numeric(),
                       perc_TPf05_extreme = numeric()
 )
@@ -45,6 +45,10 @@ pval_thr_2 <- 0.05
 
 
 for (t in seq_along(tissues)){
+  
+  message(paste0("Tissue ", tis, "..."))
+  
+  tis <- tissues[t]
   
   res_05pval <- fread(file.path(urales_home,
                                 "TFM/results_w_comention",
@@ -56,12 +60,55 @@ for (t in seq_along(tissues)){
   
   ###
   
-  high_05pval <- res_05pval[high_wil_pval <= pval_thr & coment.pval > pval_thr & coment.pval <= pval_thr_2]
-  low_05pval <- res_05pval[low_wil_pval <= pval_thr & coment.pval > pval_thr & coment.pval <= pval_thr_2]
-  extreme_05pval <- res_05pval[wilcoxon.pval <= pval_thr & coment.pval > pval_thr & coment.pval <= pval_thr_2]
+  high_pval <- nrow(res_05pval[high_wil_pval <= pval_thr & coment.pval <= pval_thr])
+  low_pval <- nrow(res_05pval[low_wil_pval <= pval_thr & coment.pval <= pval_thr])
+  extreme_pval <- nrow(res_05pval[wilcoxon.pval <= pval_thr & coment.pval <= pval_thr])
   
-  pseudo_high_05pval <- res_05pval[high_wil_pval <= pval_thr & coment.pval > pval_thr & coment.pval <= pval_thr_2]
-  pseudo_low_05pval <- res_05pval[low_wil_pval <= pval_thr & coment.pval > pval_thr & coment.pval <= pval_thr_2]
-  pseudo_extreme_05pval <- res_05pval[wilcoxon.pval <= pval_thr & coment.pval > pval_thr & coment.pval <= pval_thr_2]
+  pseudo_high_05pval <- nrow(res_05pval[high_wil_pval <= pval_thr & coment.pval > pval_thr & coment.pval <= pval_thr_2])
+  pseudo_low_05pval <- nrow(res_05pval[low_wil_pval <= pval_thr & coment.pval > pval_thr & coment.pval <= pval_thr_2])
+  pseudo_extreme_05pval <- nrow(res_05pval[wilcoxon.pval <= pval_thr & coment.pval > pval_thr & coment.pval <= pval_thr_2])
   
+  ###
+  
+  high_f_pval <- nrow(fil_high_05pval[high_wil_pval <= pval_thr & coment.pval <= pval_thr])
+  low_f_pval <- nrow(fil_low_05pval[low_wil_pval <= pval_thr & coment.pval <= pval_thr])
+  extreme_f_pval <- nrow(fil_extreme_05pval[wilcoxon.pval <= pval_thr & coment.pval <= pval_thr])
+  
+  pseudo_high_f_05pval <- nrow(fil_high_05pval[high_wil_pval <= pval_thr & coment.pval > pval_thr & coment.pval <= pval_thr_2])
+  pseudo_low_f_05pval <- nrow(fil_low_05pval[low_wil_pval <= pval_thr & coment.pval > pval_thr & coment.pval <= pval_thr_2])
+  pseudo_extreme_f_05pval <- nrow(fil_extreme_05pval[wilcoxon.pval <= pval_thr & coment.pval > pval_thr & coment.pval <= pval_thr_2])
+  
+  ###
+  
+  to.add <- data.table(tissue = tis,
+                       TP_high = high_pval,
+                       pseudo_TP05_high = pseudo_high_05pval,
+                       perc_TP05_high = pseudo_high_05pval/(pseudo_high_05pval + high_pval),
+                       TP_low = low_pval,
+                       pseudo_TP05_low = pseudo_low_05pval,
+                       perc_TP05_low = pseudo_low_05pval/(pseudo_low_05pval + low_pval),
+                       TP_extreme = extreme_pval,
+                       pseudo_TP05_extreme = pseudo_extreme_05pval,
+                       perc_TP05_extreme = pseudo_extreme_05pval/(pseudo_extreme_05pval + extreme_pval),
+                       TPf_high = high_f_pval,
+                       pseudo_TPf05_high = pseudo_high_f_05pval,
+                       perc_TPf05_high = pseudo_high_f_05pval/(pseudo_high_f_05pval + high_f_pval),
+                       TPf_low = low_f_pval,
+                       pseudo_TPf05_low = pseudo_low_f_05pval,
+                       perc_TPf05_low = pseudo_low_f_05pval/(pseudo_low_f_05pval + low_f_pval),
+                       TPf_extreme = extreme_f_pval,
+                       pseudo_TPf05_extreme = pseudo_extreme_f_05pval,
+                       perc_TPf05_extreme = pseudo_extreme_f_05pval/(pseudo_extreme_f_05pval + extreme_f_pval)
+  )
+  
+  results <- rbind(results, to.add)
 }
+
+
+fwrite(results,
+       file.path(urales_home,
+                 "TFM/results_w_comention/pseudo_TP.tsv"),
+       sep = "\t")
+
+
+message("Done! :D")
