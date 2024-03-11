@@ -1,6 +1,6 @@
 # sc-coex
 
-Continuation of the code used for my Bioinformatics and Computational Biology MSc Thesis (available at [https://github.com/SergioAlias/sc-net-analysis](https://github.com/SergioAlias/sc-net-analysis))
+Code used for the paper: Differential expression and co-expression reveal cell types relevant to rare disease phenotypes. If you are looking for code for generating tables/plots present in the paper, please check [this repo](https://github.com/SergioAlias/plots-sc-coex) instead.
 
 ### Scripts
 
@@ -118,6 +118,16 @@ Being `OBO` the Uberon OBO file, `tissue-list` the list of tissue names and `out
 
 ---
 
+- `annotations/comention/conf_matrix_per_celltype.R`: R script for generating the confusion matrices. It is used from the command line as follows:
+
+```bash
+./conf_matrix_per_celltype.R
+```
+
+We need to change the `metric` and `pval_thr` variables according to our needs. It generates TSV files with the confusion matrices for each condition.
+
+---
+
 - `annotations/comention/get_comentions.R`: R script for annotating K-S test results with co-mention information. It is used from the command line as follows:
 
 ```bash
@@ -128,34 +138,23 @@ We need to comment/uncomment lines depending of if we are using fold-change resu
 
 ---
 
-- `annotations/comention/get_conf_matrix.R`: R script for generating the confusion matrices. It is used from the command line as follows:
+- `annotations/metrics/FDR.R`: R script for applying FDR correction to p-values. It is used from the command line as follows:
 
 ```bash
-./get_conf_matrix.R
+./FDR.R
 ```
 
-We need to change the `metric` and `pval_thr` variables according to our needs. It generates TSV files with the confusion matrices for each condition.
+It takes the K-S test result files. It generates TSV files with the FDR corrected p-values.
 
 ---
 
-- `annotations/metrics/check_TP.R`: R script for checking for each celltype-HPO pair if those pairs are the same for high TP and low TP. It is used from the command line as follows:
+- `annotations/metrics/get_metrics.R`: R script for generating validation metrics from the confusion matrices. It is used from the command line as follows:
 
 ```bash
-./check_TP.R
+./get_metrics.R
 ```
 
-It takes the K-S test result files with the co-mention information added. It generates a TSV file with the shared TP pairs.
-
----
-
-
-- `annotations/metrics/pseudo_TP.R`: [INCOMPLETE] R script for counting TPs with p-val threshold of 0.05 that are not TP for p-val threshold of 0.001. It is used from the command line as follows:
-
-```bash
-./pseudo_TP.R
-```
-
-It takes the K-S test result files with the co-mention information added. It generates a TSV file with the pseudo TPs.
+It takes the confusion matrices files. It generates TSV files with the validation metrics.
 
 ---
 
@@ -215,16 +214,6 @@ Being `tissue` the tissue name (e.g. liver), `max_cluster` the number of cluster
 ./plot_ks.R
 ```
 We need to change the `metric`, `test`, `hpo_term`, `tissue` and `cluster` variables according to our needs. It takes the cluster annotation file for the tissue, K-S results for the tissue and measure used (differencial expression or COEX), a list of genes related to the HPO term and the co-expression matrix. It generates a PDF file with the plot.
-
----
-
-- `plot_percent_HPO.R`: R script for plotting the percentage of cell-type-related co-mentions per HPO term. It is used from the command line as follows:
-
-```bash
-./plot_percent_HPO.R
-```
-
-It takes the co-mention file and outputs a PDF file with the plot.
 
 ---
 
