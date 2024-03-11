@@ -1,9 +1,9 @@
 #!/usr/bin/env Rscript
 
 # Sergio Alías, 20230426
-# Last modified 20230427
+# Last modified 20240226
 
-# Script for getting confusion matrices that explain coex / fc / fcst results
+# Script for getting confusion matrices that explain coex / fc / fcst results (per celltype, NOT cluster)
 
 ### Packages
 
@@ -12,14 +12,36 @@ library(dplyr)
 
 ### Input specs
 
-urales_home <- "/run/user/1000/gvfs/sftp:host=urales/home/salias"
+urales_home <- "/run/user/1001/gvfs/sftp:host=urales,user=salias/home/salias"
+#urales_home <- "/run/user/1000/gvfs/sftp:host=urales/home/salias"
 #urales_home <- "/run/user/1013/gvfs/sftp:host=urales,user=salias/home/salias"
 
-metric <- "fcst" # coex, fc, fcst
+metric <- "fc" # coex, fc, fcst
 pval_thr <- 0.001 # 0.001
 
 if (metric == "coex"){
-tissues <- c("blood", "liver", "lung", "pancreas", "spleen", "stomach", "testis")
+  tissues <- c("adipose-tissue",
+               "blood",
+               "brain",
+               "breast",
+               "bronchus",
+               "colon",
+               "endometrium",
+               "esophagus",
+               "eye",
+               "heart-muscle",
+               "kidney",
+               "liver",
+               "lung",
+               "ovary",
+               "pancreas",
+               "prostate-gland",
+               "skeletal-muscle-organ",
+               "skin",
+               "small-intestine",
+               "spleen",
+               "stomach",
+               "testis")
 } else {
   tissues <- c("adipose-tissue",
              "blood",
@@ -34,12 +56,9 @@ tissues <- c("blood", "liver", "lung", "pancreas", "spleen", "stomach", "testis"
              "kidney",
              "liver",
              "lung",
-             "lymph-node",
              "ovary",
              "pancreas",
-             #"placenta",
              "prostate-gland",
-             #"rectum",
              "skeletal-muscle-organ",
              "skin-of-body",
              "small-intestine",
@@ -58,7 +77,7 @@ truth_tables_low_filt <- data.frame(TP = numeric(), TN = numeric(), FP = numeric
 truth_tables_low <- data.frame(TP = numeric(), TN = numeric(), FP = numeric(), FN = numeric())
 
 comentions <- fread(file.path(urales_home,
-                              "TFM/annotations/comention/ALL_ACT-HPO_add_s.tsv"))
+                              "TFM/annotations/comention/ALL_ACT-HPO_0.05_add_s.tsv"))
 
 colnames(comentions) <- c("ACT.id",
                           "ACT.name",
@@ -89,7 +108,7 @@ for (i in seq_along(tissues)){
                              tissue,
                              paste0("wil_results_HPA_",
                                     tissue,
-                                    ".tsv")))
+                                    "_corrected.tsv")))
   } else {
     results <- fread(file.path(urales_home,
                                "TFM/fold_change",
@@ -99,7 +118,7 @@ for (i in seq_along(tissues)){
                                       metric,
                                       "_",
                                       tissue,
-                                      ".tsv")))
+                                      "_corrected.tsv")))
   }
   
   annotations <- fread(file.path(urales_home,
@@ -152,12 +171,23 @@ for (i in seq_along(tissues)){
     }
   }
   
+  
+  # Keep ties 
+  #ks_values <- as.data.frame(ks_values)
+  #ks_values_filtered <- ks_values %>%
+   # group_by(tissue) %>%
+    #mutate(across(starts_with("HP"), ~ ifelse(.x == min(.x), .x, NA))) %>%
+    #ungroup()
+  #ks_values_filtered <- as.data.frame(ks_values_filtered)
+  
+  # Only one minimum
   ks_values <- as.data.frame(ks_values)
   ks_values_filtered <- ks_values %>%
     group_by(tissue) %>%
-    mutate(across(starts_with("HP"), ~ ifelse(.x == min(.x), .x, NA))) %>%
+    mutate(across(starts_with("HP"), ~ ifelse(rank(.x, ties.method = "first") == 1, .x, NA))) %>%
     ungroup()
   ks_values_filtered <- as.data.frame(ks_values_filtered)
+  
   
   TP <- 0
   TN <- 0
@@ -229,27 +259,27 @@ for (i in seq_along(tissues)){
   }
 }
 
-if (metric != "coex"){
-  sums <- colSums(truth_tables)
-  truth_tables <- rbind(truth_tables, sums)
-  sums <- colSums(truth_tables_filt)
-  truth_tables_filt <- rbind(truth_tables_filt, sums)
-  sums <- colSums(truth_tables_high)
-  truth_tables_high <- rbind(truth_tables_high, sums)
-  sums <- colSums(truth_tables_high_filt)
-  truth_tables_high_filt <- rbind(truth_tables_high_filt, sums)
-  sums <- colSums(truth_tables_low)
-  truth_tables_low <- rbind(truth_tables_low, sums)
-  sums <- colSums(truth_tables_low_filt)
-  truth_tables_low_filt <- rbind(truth_tables_low_filt, sums)
+
+sums <- colSums(truth_tables)
+truth_tables <- rbind(truth_tables, sums)
+sums <- colSums(truth_tables_filt)
+truth_tables_filt <- rbind(truth_tables_filt, sums)
+sums <- colSums(truth_tables_high)
+truth_tables_high <- rbind(truth_tables_high, sums)
+sums <- colSums(truth_tables_high_filt)
+truth_tables_high_filt <- rbind(truth_tables_high_filt, sums)
+sums <- colSums(truth_tables_low)
+truth_tables_low <- rbind(truth_tables_low, sums)
+sums <- colSums(truth_tables_low_filt)
+truth_tables_low_filt <- rbind(truth_tables_low_filt, sums)
   
-  rownames(truth_tables)[nrow(truth_tables)] <- "all"
-  rownames(truth_tables_filt)[nrow(truth_tables_filt)] <- "all"
-  rownames(truth_tables_high)[nrow(truth_tables_high)] <- "all"
-  rownames(truth_tables_high_filt)[nrow(truth_tables_high_filt)] <- "all"
-  rownames(truth_tables_low)[nrow(truth_tables_low)] <- "all"
-  rownames(truth_tables_low_filt)[nrow(truth_tables_low_filt)] <- "all"
-}
+rownames(truth_tables)[nrow(truth_tables)] <- "all"
+rownames(truth_tables_filt)[nrow(truth_tables_filt)] <- "all"
+rownames(truth_tables_high)[nrow(truth_tables_high)] <- "all"
+rownames(truth_tables_high_filt)[nrow(truth_tables_high_filt)] <- "all"
+rownames(truth_tables_low)[nrow(truth_tables_low)] <- "all"
+rownames(truth_tables_low_filt)[nrow(truth_tables_low_filt)] <- "all"
+
 
 
 
@@ -257,7 +287,7 @@ write.table(truth_tables,
             file = file.path(urales_home,
                              "TFM/results_w_comention",
                              paste0(metric,
-                                    "_extreme_confusion_table.tsv")),
+                                    "_extreme_confusion_table_corr_byct.tsv")),
             sep = "\t",
             quote = FALSE,
             col.names = NA)
@@ -267,7 +297,7 @@ write.table(truth_tables_filt,
             file = file.path(urales_home,
                              "TFM/results_w_comention",
                              paste0(metric,
-                                    "_extreme_confusion_table_filtered.tsv")),
+                                    "_extreme_confusion_table_filtered_corr_byct.tsv")),
             sep = "\t",
             quote = FALSE,
             col.names = NA)
@@ -278,7 +308,7 @@ write.table(truth_tables_high,
             file = file.path(urales_home,
                              "TFM/results_w_comention",
                              paste0(metric,
-                                    "_high_confusion_table.tsv")),
+                                    "_high_confusion_table_corr_byct.tsv")),
             sep = "\t",
             quote = FALSE,
             col.names = NA)
@@ -288,7 +318,7 @@ write.table(truth_tables_high_filt,
             file = file.path(urales_home,
                              "TFM/results_w_comention",
                              paste0(metric,
-                                    "_high_confusion_table_filtered.tsv")),
+                                    "_high_confusion_table_filtered_corr_byct.tsv")),
             sep = "\t",
             quote = FALSE,
             col.names = NA)
@@ -299,7 +329,7 @@ write.table(truth_tables_low,
             file = file.path(urales_home,
                              "TFM/results_w_comention",
                              paste0(metric,
-                                    "_low_confusion_table.tsv")),
+                                    "_low_confusion_table_corr_byct.tsv")),
             sep = "\t",
             quote = FALSE,
             col.names = NA)
@@ -309,7 +339,8 @@ write.table(truth_tables_low_filt,
             file = file.path(urales_home,
                              "TFM/results_w_comention",
                              paste0(metric,
-                                    "_low_confusion_table_filtered.tsv")),
+                                    "_low_confusion_table_filtered_corr_byct.tsv")),
             sep = "\t",
             quote = FALSE,
             col.names = NA)
+

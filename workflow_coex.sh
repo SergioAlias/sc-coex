@@ -1,6 +1,6 @@
 #!/bin/bash
 # Sergio Alías, 20220928
-# Last modified 20221108
+# Last modified 20231129
 
 # Workflow for the analysis of HPO-related genes COEX values
 
@@ -81,7 +81,7 @@ for HPO in ${HPO_NAMES[@]}; do
     mkdir -p ./coex-analysis/$DATASET/$TIS/$HPO
     FINDSUBSET=($( find ./coex-analysis/$DATASET/$TIS/$HPO | grep "subset_genes"))
     if [ ${#FINDSUBSET[@]} -eq 0 ]; then
-        python3 ./subset-genes.py $HPO $TIS $NCLUS $DATASET
+        python3.7 ./subset-genes.py $HPO $TIS $NCLUS $DATASET
     fi
 done
 
@@ -102,6 +102,5 @@ for HPO in ${HPO_NAMES[@]}; do
     FINDPLOTS=($( find ./coex-analysis/$DATASET/$TIS/$HPO | grep "_plots_"))
     if [ ${#FINDPLOTS[@]} -eq 0 ]; then
         Rscript ./plot_coex.R -t $TIS -c $((NCLUS-1)) -o $HPO -d $DATASET -r 1000
-	# Rscript ./plot_coex.R -t $TIS -c 2 -o $HPO -d $DATASET -r 10
     fi
 done

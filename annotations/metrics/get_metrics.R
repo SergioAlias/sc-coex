@@ -17,6 +17,7 @@ library(data.table)
 
 urales_home <- "/run/user/1000/gvfs/sftp:host=urales/home/salias/TFM"
 urales_home <- "/run/user/1013/gvfs/sftp:host=urales,user=salias/home/salias/TFM"
+urales_home <- "/run/user/1001/gvfs/sftp:host=urales,user=salias/home/salias/TFM"
 
 file_names <- list.files(file.path(urales_home, "results_w_comention"), pattern = "\\.tsv$", full.names = FALSE)
 
@@ -95,7 +96,7 @@ for (i in c(1:nrow(table))){
   
 }
 
-if (grepl("coex", filename)){
+if (grepl("nonamesoallisselected", filename)){ # AQUÍ PONÍA COEX
   results$tissue <- c("Blood",
                       "Liver",
                       "Lung",
@@ -118,7 +119,6 @@ if (grepl("coex", filename)){
                     "Kidney",
                     "Liver",
                     "Lung",
-                    "Lymph node",
                     "Ovary",
                     "Pancreas",
                     "Prostate gland",

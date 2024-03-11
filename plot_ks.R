@@ -17,13 +17,18 @@ library(ggplot2)
 # Main script
 
 dataset <- "HPA" # dataset name
-metric <- "coex" # coex, fc or fcst
+metric <- "fc" # coex, fc or fcst
 test <- "high" # extreme, high, low
-hpo_term <- "HP0001082" # hpo code ("HP" for coex, "HP:" for fc / fcst)
+hpo_term <- "HP:0008209" # hpo code ("HP" for coex, "HP:" for fc / fcst)
 hpo_code_plain <- hpo_term
-tissue <- "liver" # tissue
-cluster <- "9" # cluster
+tissue <- "ovary" # tissue
+cluster <- "2" # cluster
 tissue_clus <- paste0(tissue, "-", cluster)
+firstup <- function(x) {
+  substr(x, 1, 1) <- toupper(substr(x, 1, 1))
+  x
+}
+
 
 ann_file <- paste0('annotations/cluster-annotation/', dataset, '/', tissue, '-cluster-annotation')
 annotations <- read.table(file = ann_file, sep = '\t', header = FALSE)
@@ -33,7 +38,7 @@ if (metric == "coex"){
   
 # p-value del K-S y anotación HPO
 
-ks_pval <- fread(paste0("coex-analysis/", dataset, "/", tissue, "/wil_results_", dataset, "_", tissue, ".tsv"))
+ks_pval <- fread(paste0("coex-analysis/", dataset, "/", tissue, "/wil_results_", dataset, "_", tissue, "_corrected.tsv"))
 
 hpo_name <- ks_pval[hpo == hpo_term & tissue == tissue_clus]$hpo.name 
 
@@ -70,7 +75,9 @@ if (test == "extreme"){
 }
 
 plot <- ggplot(df, aes(COEX, fill = Subset, colour = Subset)) + geom_density(alpha = 0.2) +
-  labs(title=paste0(dataset, ' ', tissue, '-', cluster, ' (', cluster_ann, ')\n', paste0(substring(hpo_term, 1, 2), ":", substring(hpo_term, 3)), ' (', hpo_name, ')'), y = 'Frecuencia') +
+  labs(title=paste0(firstup(cluster_ann), ' (', firstup(tissue), ')\n', paste0(substring(hpo_term, 1, 2), ":", substring(hpo_term, 3)), ' (', hpo_name, ')'), 
+       # y = 'Frecuencia',
+       y = element_blank()) + # BORRAR Y DESCOMENTAR ARRIBA SI NO SE HACE PATCHWORK!!!!!
   theme(plot.title = element_text(hjust=0.5),
         legend.title= element_blank())
 
@@ -142,8 +149,9 @@ plot <- plot +
   ks_pval <- as.numeric(ks_pval)
   
   plot <- ggplot(df, aes(FC, fill = Subset, colour = Subset)) + geom_density(alpha = 0.2) +
-    labs(title=paste0(dataset, ' ', tissue, '-', cluster, ' (', cluster_ann, ')\n', hpo_term, ' (', hpo_name, ')'),
+    labs(title=paste0(firstup(cluster_ann), ' (', firstup(tissue), ')\n', hpo_term, ' (', hpo_name, ')'),
          y = 'Frecuencia',
+         y = element_blank(),
          x = x_axis_title) +
     theme(plot.title = element_text(hjust=0.5),
           legend.title= element_blank())
@@ -158,8 +166,11 @@ plot <- plot +
 
 pdf(paste0('plots/', metric, '_', test, '_', hpo_code_plain, '_', tissue, '_', cluster, '.pdf'))
 
-plot
+plot + theme(legend.position = "none")
 
 invisible(dev.off())
+
+saveRDS(plot,
+        file = paste0('plots/', metric, '_', test, '_', hpo_code_plain, '_', tissue, '_', cluster, '.RDS'))
 
 message("Plot saved! -> ", paste0(metric, '_', test, '_', hpo_code_plain, '_', tissue, '_', cluster, '.pdf'))

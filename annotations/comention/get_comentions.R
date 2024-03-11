@@ -5,7 +5,7 @@
 
 # Script for getting commentions that explain coex / fc / fcst results
 # We need:
-#   - Coex analysis results -> wil_results-[HPA/TabulaSapiens]-[tissue].tsv
+#   - Coex analysis results -> wil_results-[HPA/TabulaSapiens]-[tissue]_corrected.tsv
 #   - Comention files -> ALL_CL-HPO_add_s.tsv /// ALL_ACT-HPO_add_s.tsv
 
 
@@ -16,34 +16,31 @@ library(data.table)
 
 ### Input files setup
 
-tissues <- c("blood", "liver", "lung", "pancreas", "spleen", "stomach", "testis")
-# tissues <- c("adipose-tissue",
-#              "blood",
-#              "brain",
-#              "breast",
-#              "bronchus",
-#              "colon",
-#              "endometrium",
-#              "esophagus",
-#              "eye",
-#              "heart",
-#              "kidney",
-#              "liver",
-#              "lung",
-#              "lymph-node",
-#              "ovary",
-#              "pancreas",
-#              #"placenta",
-#              "prostate-gland",
-#              #"rectum",
-#              "skeletal-muscle-organ",
-#              "skin-of-body",
-#              "small-intestine",
-#              "spleen",
-#              "stomach",
-#              "testis")
+tissues <- c("adipose-tissue",
+             "blood",
+             "brain",
+             "breast",
+             "bronchus",
+             "colon",
+             "endometrium",
+             "esophagus",
+             "eye",
+             "heart-muscle",
+             "kidney",
+             "liver",
+             "lung",
+             "ovary",
+             "pancreas",
+             "prostate-gland",
+             "skeletal-muscle-organ",
+             "skin",
+             "small-intestine",
+             "spleen",
+             "stomach",
+             "testis")
 dataset <- "HPA"
-urales_home <- "/run/user/1000/gvfs/sftp:host=urales/home/salias"
+urales_home <- "/run/user/1001/gvfs/sftp:host=urales,user=salias/home/salias"
+# urales_home <- "/run/user/1000/gvfs/sftp:host=urales/home/salias"
 # urales_home <- "/run/user/1013/gvfs/sftp:host=urales,user=salias/home/salias"
 
 
@@ -65,8 +62,8 @@ results <- fread(file.path(urales_home,
                            tissue,
                            paste0("wil_results_HPA_",
                                   tissue,
-                                  #"_corrected.tsv"))
-                                  ".tsv"))
+                                  "_corrected.tsv"))
+                                  #".tsv"))
                  )
 
 annotations <- fread(file.path(urales_home,
@@ -84,7 +81,7 @@ annotations <- fread(file.path(urales_home,
 
 
 comentions <- fread(file.path(urales_home,
-                              "TFM/annotations/comention/ALL_ACT-HPO_0.05_add_s.tsv"))
+                              "TFM/annotations/comention/ALL_ACT-HPO_add_s.tsv"))
 
 colnames(comentions) <- c("ACT.id",
                           "ACT.name",
@@ -153,7 +150,8 @@ fwrite(sign.results, file = paste0(file.path(urales_home,
                                              paste0(tissue,
                                                     "_",
                                                     dataset,
-                                                    "_05pval_coex_results_w_comention.tsv"))),
+                                                    #"_coex_results_w_comention.tsv"))),
+                                                    "_coex_results_w_comention_corrected.tsv"))),
        sep = "\t")
 
 
