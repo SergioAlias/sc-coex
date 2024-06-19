@@ -128,6 +128,16 @@ We need to change the `metric` and `pval_thr` variables according to our needs. 
 
 ---
 
+- `annotations/comention/conf_matrix_with_both_measures.R`: R script for generating the confusion matrices when considering both differential expression and co-expression for a positive. It is used from the command line as follows:
+
+```bash
+./conf_matrix_with_both_measures.R
+```
+
+We need to change the `pval_thr` variable according to our needs. It generates a TSV file with the confusion matrices.
+
+---
+
 - `annotations/comention/get_comentions.R`: R script for annotating K-S test results with co-mention information. It is used from the command line as follows:
 
 ```bash
@@ -135,6 +145,16 @@ We need to change the `metric` and `pval_thr` variables according to our needs. 
 ```
 
 We need to comment/uncomment lines depending of if we are using fold-change results or co-expression results. It takes K-S test output TSV files and co-mention file, and generates a new K-S test file with additional columns for co-mention information.
+
+---
+
+- `annotations/comention/remove_blind_pheno.R`: R script for filtering K-S test results so we only keep phenotypes with at least one significant co-mention in order to avoid blind predictions. It is used from the command line as follows:
+
+```bash
+./remove_blind_pheno.R
+```
+
+We need to change the `metric` and `pval_thr` variables according to our needs. It takes K-S test output TSV files and co-mention file, and generates a new K-S test file where phenotypes without significant co-mentions are filtered out.
 
 ---
 
