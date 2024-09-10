@@ -1,6 +1,6 @@
 # sc-coex
 
-Code used for the paper: Differential expression and co-expression reveal cell types relevant to rare disease phenotypes. If you are looking for code for generating tables/plots present in the paper, please check [this repo](https://github.com/SergioAlias/plots-sc-coex) instead.
+Code used for the paper: Differential expression and co-expression reveal cell types relevant to genetic disorder phenotypes. If you are looking for code for generating tables/plots present in the paper, please check [this repo](https://github.com/SergioAlias/plots-sc-coex) instead.
 
 ### Scripts
 
